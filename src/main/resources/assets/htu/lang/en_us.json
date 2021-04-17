@@ -1,0 +1,22 @@
+{
+  "itemGroup.htu_creative_tab": "High Tech Universe",
+
+  "item.htu.ingot_copper": "Copper Ingot",
+  "item.htu.ingot_tin": "Tin Ingot",
+  "item.htu.ingot_bronze": "Bronze Ingot",
+
+  "block.htu.block_copper": "Copper Block",
+  "block.htu.block_tin": "Tin Block",
+  "block.htu.block_bronze": "Bronze Block",
+
+  "block.htu.block_copper_ore": "Copper Ore",
+  "block.htu.block_tin_ore": "Tin Ore",
+
+  "block.htu.block_furnace": "Furnace",
+
+  "block.htu.block_smeltery": "Smeltery",
+  "container.htu.smeltery": "Smeltery",
+
+  "block.htu.block_steam_boiler": "Steam Boiler",
+  "container.htu.steam_boiler": "Steam Boiler"
+}
