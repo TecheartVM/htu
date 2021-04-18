@@ -6,6 +6,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.fluid.Fluid;
+import net.minecraft.fluid.Fluids;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.ItemStackHelper;
 import net.minecraft.inventory.container.Container;
@@ -15,6 +16,7 @@ import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SUpdateTileEntityPacket;
 import net.minecraft.particles.ParticleTypes;
+import net.minecraft.tileentity.AbstractFurnaceTileEntity;
 import net.minecraft.tileentity.ITickableTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Direction;
@@ -30,7 +32,6 @@ import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler;
-import net.minecraftforge.fluids.capability.templates.FluidTank;
 import net.minecraftforge.registries.ForgeRegistries;
 import techeart.htu.MainClass;
 import techeart.htu.objects.HTUFluidTank;
@@ -40,6 +41,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Random;
 
+//it was TileEntity not Abstract...
 public class TileEntitySteamBoiler extends TileEntity implements IInventory, INamedContainerProvider, ITickableTileEntity, IFluidHandler
 {
     private Random random = new Random();
@@ -89,7 +91,7 @@ public class TileEntitySteamBoiler extends TileEntity implements IInventory, INa
     private ITextComponent customName;
 
     //fluid constant links
-    private static final Fluid WATER = ForgeRegistries.FLUIDS.getValue(new ResourceLocation("minecraft:water")).getFluid();
+    private static final Fluid WATER = Fluids.WATER;
     private static final Fluid STEAM = RegistryHandler.FLUID_STEAM.get();
 
     private HTUFluidHandler fluidHandler;

@@ -3,6 +3,7 @@ package techeart.htu.objects.pump;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.fluid.Fluid;
+import net.minecraft.fluid.Fluids;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.ITickableTileEntity;
 import net.minecraft.tileentity.TileEntity;
@@ -31,7 +32,7 @@ public class TileEntityWaterPump extends TileEntity implements ITickableTileEnti
     protected static final int steamConsumptionRate = 10;
 
     //fluid constant links
-    private static final Fluid WATER = ForgeRegistries.FLUIDS.getValue(new ResourceLocation("minecraft:water")).getFluid();
+    private static final Fluid WATER = Fluids.WATER;
     private static final Fluid STEAM = RegistryHandler.FLUID_STEAM.get();
 
     private final HTUFluidHandler fluidHandler;

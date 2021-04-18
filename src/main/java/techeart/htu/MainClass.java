@@ -8,6 +8,7 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.RenderTypeLookup;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.fluid.Fluid;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipeSerializer;
@@ -15,12 +16,15 @@ import net.minecraft.util.Util;
 import net.minecraft.world.server.ServerChunkProvider;
 import net.minecraftforge.client.event.RecipesUpdatedEvent;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.GatherDataEvent;
+import net.minecraftforge.fml.event.server.FMLServerStartedEvent;
+import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import techeart.htu.objects.boiler.GuiSteamBoiler;
 import techeart.htu.objects.smeltery.GuiSmeltery;
@@ -58,8 +62,6 @@ public class MainClass
     private void setup(final FMLCommonSetupEvent event)
     {
         // some preinit code
-        //TODO this should be somewhere else because of ItemTags loading
-        FuelTemperatures.init();
     }
 
     private void setupClient(final FMLClientSetupEvent event)
@@ -95,12 +97,11 @@ public class MainClass
 //        }
 //    }
 
-    // You can use SubscribeEvent and let the Event Bus discover methods to call
-//    @SubscribeEvent
-//    public void onServerStarting(FMLServerStartingEvent event)
-//    {
-//        // do something when the server starts
-//    }
+    @SubscribeEvent
+    public void onServerStarting(FMLServerStartingEvent event)
+    {
+        FuelTemperatures.init();
+    }
 
     // You can use EventBusSubscriber to automatically subscribe events on the contained class (this is subscribing to the MOD
     // Event bus for receiving Registry Events)

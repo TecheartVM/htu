@@ -5,6 +5,7 @@ import net.minecraft.block.material.Material;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.fluid.Fluids;
 import net.minecraft.inventory.InventoryHelper;
 import net.minecraft.inventory.container.INamedContainerProvider;
 import net.minecraft.item.BlockItemUseContext;
@@ -33,6 +34,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 import techeart.htu.objects.HTUBlock;
 import techeart.htu.utils.HTUTileEntityType;
 import techeart.htu.utils.RegistryHandler;
+import techeart.htu.utils.Utils;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -40,6 +42,7 @@ import java.util.Random;
 
 public class BlockSteamBoiler extends HTUBlock implements ITileEntityProvider
 {
+    //TODO: make this thing ALIVE
     private static Random random = new Random();
     public static final int componentDropChance = 80;
 
@@ -167,11 +170,12 @@ public class BlockSteamBoiler extends HTUBlock implements ITileEntityProvider
         if(world != null && !world.isRemote)
         {
             TileEntity tileEntity = world.getTileEntity(pos);
+            Item heldItem = player.getHeldItemMainhand().getItem();
             if(tileEntity instanceof TileEntitySteamBoiler)
             {
-                if(player.getHeldItemMainhand().getItem().equals(Items.WATER_BUCKET) && player.getHeldItemMainhand().getCount() == 1)
+                if(heldItem.equals(Items.WATER_BUCKET) && player.getHeldItemMainhand().getCount() == 1/*TODO:Need to fix?*/)
                 {
-                    if(((TileEntitySteamBoiler) world.getTileEntity(pos)).fill(new FluidStack(ForgeRegistries.FLUIDS.getValue(new ResourceLocation("minecraft:water")), 1000), IFluidHandler.FluidAction.EXECUTE) != 0)
+                    if(((TileEntitySteamBoiler) world.getTileEntity(pos)).fill(new FluidStack(Fluids.WATER,1000), IFluidHandler.FluidAction.EXECUTE) != 0)
                     {
                         world.playSound(null, pos, SoundEvents.ITEM_BUCKET_EMPTY, SoundCategory.BLOCKS, 1.0F, 1.0F);
                         if(!player.isCreative()) player.setHeldItem(Hand.MAIN_HAND, new ItemStack(Items.BUCKET, 1));
@@ -179,7 +183,6 @@ public class BlockSteamBoiler extends HTUBlock implements ITileEntityProvider
                 }
                 else
                 {
-                    Item heldItem = player.getHeldItem(hand).getItem();
                     for (Item tool : ignitionTools)
                     {
                         if(heldItem == tool)
