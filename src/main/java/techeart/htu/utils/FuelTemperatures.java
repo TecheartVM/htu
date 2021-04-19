@@ -1,7 +1,9 @@
 package techeart.htu.utils;
 
 import com.google.common.collect.Maps;
+import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
+import net.minecraft.block.material.Material;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -27,10 +29,8 @@ public class FuelTemperatures
         addItemBurnTime(Blocks.DRIED_KELP_BLOCK, 700);
         addItemBurnTime(Blocks.BAMBOO, 700);
         addItemBurnTime(Blocks.DEAD_BUSH, 700);
-
-        //TODO
-        //addItemTagBurnTime(ItemTags.LOGS, 950);
-        //addItemTagBurnTime(ItemTags.CARPETS, 600);
+        addItemTagBurnTime(ItemTags.LOGS, 950);
+        addItemTagBurnTime(ItemTags.CARPETS, 600);
     }
 
     public static int getBurnTemperature(Item fuel)

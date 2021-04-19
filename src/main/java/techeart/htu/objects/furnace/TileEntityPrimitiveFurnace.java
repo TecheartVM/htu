@@ -28,6 +28,8 @@ public class TileEntityPrimitiveFurnace extends AbstractFurnaceTileEntity
 
     /**Chance in percents to extinct the burning fire in furnace*/
     public static final int EXTINCTION_CHANCE = 5;
+
+    //TODO: MOVE IT!
     private boolean ignited = false;
     private void setIgnited(boolean value)
     {
@@ -139,6 +141,7 @@ public class TileEntityPrimitiveFurnace extends AbstractFurnaceTileEntity
         return this.furnaceData.get(0) > 0;
     }
 
+    //TODO: (fix) once lited - forever lited!
     public void ignite()
     {
         if(!world.isRemote)
@@ -161,12 +164,15 @@ public class TileEntityPrimitiveFurnace extends AbstractFurnaceTileEntity
                         }
 
                         this.world.setBlockState(this.pos, this.world.getBlockState(this.pos).with(AbstractFurnaceBlock.LIT, this.isBurning()), 3);
-
                         markDirty();
                     }
                 }
             }
-            else setIgnited(false);
+            else Extinguish();
         }
+    }
+    public void Extinguish()
+    {
+        setIgnited(false);
     }
 }

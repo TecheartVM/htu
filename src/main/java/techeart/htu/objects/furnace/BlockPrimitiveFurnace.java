@@ -5,6 +5,7 @@ import net.minecraft.block.material.Material;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.container.INamedContainerProvider;
 import net.minecraft.item.Item;
+import net.minecraft.item.Items;
 import net.minecraft.particles.ParticleTypes;
 import net.minecraft.stats.Stats;
 import net.minecraft.tileentity.TileEntity;
@@ -16,7 +17,6 @@ import net.minecraft.world.World;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.ToolType;
-import net.minecraftforge.registries.ForgeRegistries;
 import techeart.htu.utils.HTUTileEntityType;
 
 import java.util.ArrayList;
@@ -34,7 +34,7 @@ public class BlockPrimitiveFurnace extends AbstractFurnaceBlock
                 .sound(SoundType.STONE)
         );
 
-        ignitionTools.add(ForgeRegistries.ITEMS.getValue(new ResourceLocation("minecraft:flint_and_steel")));
+        ignitionTools.add(Items.FLINT_AND_STEEL);
     }
 
     @Override
@@ -42,7 +42,7 @@ public class BlockPrimitiveFurnace extends AbstractFurnaceBlock
     {
         super.onReplaced(state, worldIn, pos, newState, isMoving);
         if(newState.getBlock().isAir(newState, worldIn, pos) && state.get(AbstractFurnaceBlock.LIT))
-            worldIn.setBlockState(pos, ForgeRegistries.BLOCKS.getValue(new ResourceLocation("minecraft:fire")).getDefaultState());
+            worldIn.setBlockState(pos, Blocks.FIRE.getDefaultState());
     }
 
     @Override
@@ -62,6 +62,11 @@ public class BlockPrimitiveFurnace extends AbstractFurnaceBlock
                         ((TileEntityPrimitiveFurnace) tileEntity).ignite();
                         return ActionResultType.SUCCESS;
                     }
+                }
+                if(heldItem == Items.WATER_BUCKET)
+                {
+                    ((TileEntityPrimitiveFurnace) tileEntity).Extinguish();
+                    return ActionResultType.SUCCESS;
                 }
 
                 this.interactWith(world, pos, player);

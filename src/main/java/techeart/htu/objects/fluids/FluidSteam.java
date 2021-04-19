@@ -1,18 +1,19 @@
 package techeart.htu.objects.fluids;
 
-import net.minecraft.block.BlockState;
+import net.minecraft.block.FlowingFluidBlock;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockReader;
-import net.minecraft.world.IWorld;
 import net.minecraft.world.IWorldReader;
 import net.minecraftforge.fluids.FluidAttributes;
 import net.minecraftforge.fluids.ForgeFlowingFluid;
 import techeart.htu.MainClass;
 import techeart.htu.utils.RegistryHandler;
+
+import java.util.function.Supplier;
 
 public abstract class FluidSteam
 {
@@ -46,28 +47,6 @@ public abstract class FluidSteam
             return ATTRS.color(0xFFFFFFFF).build(STEAM);
         }
 
-//        @Override
-//        protected void flowAround(IWorld worldIn, BlockPos pos, IFluidState stateIn)
-//        {
-//            if (!stateIn.isEmpty())
-//            {
-//                BlockState blockState = worldIn.getBlockState(pos);
-//                BlockPos posAbove = pos.up();
-//                BlockState blockAbove = worldIn.getBlockState(posAbove);
-//                IFluidState fluidState = this.calculateCorrectFlowingState(worldIn, posAbove, blockAbove);
-//                if (this.canFlow(worldIn, pos, blockState, Direction.UP, posAbove, blockAbove, worldIn.getFluidState(posAbove), fluidState.getFluid()))
-//                {
-//                    this.flowInto(worldIn, posAbove, blockAbove, Direction.UP, fluidState);
-//                }
-//            }
-//            super.flowAround(worldIn, pos, stateIn);
-//        }
-//
-//        @Override
-//        protected boolean canDisplace(IFluidState state, IBlockReader world, BlockPos pos, Fluid fluidIn, Direction direction)
-//        {
-//            return direction == Direction.UP && !isEquivalentTo(fluidIn);
-//        }
     }
 
     public static class Flowing extends ForgeFlowingFluid.Flowing
@@ -76,28 +55,11 @@ public abstract class FluidSteam
         {
             super(PROPS);
         }
-
-        @Override
-        protected void flowAround(IWorld worldIn, BlockPos pos, FluidState stateIn)
-        {
-            if (!stateIn.isEmpty())
-            {
-                BlockState blockState = worldIn.getBlockState(pos);
-                BlockPos posAbove = pos.up();
-                BlockState blockAbove = worldIn.getBlockState(posAbove);
-                FluidState fluidState = this.calculateCorrectFlowingState(worldIn, posAbove, blockAbove);
-                if (this.canFlow(worldIn, pos, blockState, Direction.UP, posAbove, blockAbove, worldIn.getFluidState(posAbove), fluidState.getFluid()))
-                {
-                    this.flowInto(worldIn, posAbove, blockAbove, Direction.UP, fluidState);
-                }
-            }
-            super.flowAround(worldIn, pos, stateIn);
-        }
-
         @Override
         protected boolean canDisplace(FluidState state, IBlockReader world, BlockPos pos, Fluid fluidIn, Direction direction)
         {
             return direction == Direction.UP && !isEquivalentTo(fluidIn);
         }
+
     }
 }
