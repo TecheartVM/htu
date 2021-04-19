@@ -105,7 +105,7 @@ public class BlockSteamBoiler extends HTUBlock implements ITileEntityProvider
     public void onBlockPlacedBy(World worldIn, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack)
     {
         super.onBlockPlacedBy(worldIn, pos, state, placer, stack);
-        worldIn.setBlockState(pos.up(), RegistryHandler.BLOCK_STEAM_BOILER_TOP.getDefaultState());
+        worldIn.setBlockState(pos.up(), RegistryHandler.BLOCK_STEAM_BOILER_TOP.get().getDefaultState());
         if(stack.hasDisplayName())
         {
             TileEntity tileEntity = worldIn.getTileEntity(pos);
@@ -219,7 +219,7 @@ public class BlockSteamBoiler extends HTUBlock implements ITileEntityProvider
             world.removeTileEntity(pos);
         //remove boiler top
         BlockState blockAbove = world.getBlockState(pos.up());
-        if(blockAbove.getBlock() == RegistryHandler.BLOCK_STEAM_BOILER_TOP)
+        if(blockAbove.getBlock() == RegistryHandler.BLOCK_STEAM_BOILER_TOP.get())
             world.setBlockState(pos.up(), Blocks.AIR.getDefaultState());
     }
 }

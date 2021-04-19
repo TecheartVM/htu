@@ -52,6 +52,10 @@ public class MainClass
 
     public static final Logger LOGGER = LogManager.getLogger();
 
+    //public static MainClass instance;
+
+    //static { FluidRegistry.enableUniversalBucket(); }
+
     public MainClass()
     {
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
@@ -67,7 +71,6 @@ public class MainClass
     private void setup(final FMLCommonSetupEvent event)
     {
         //Oregen
-        OreGeneration.registerFeatures();
         OreGeneration.setupOreGenerator();
     }
 
@@ -127,7 +130,7 @@ public class MainClass
         @Override
         public ItemStack createIcon()
         {
-            return new ItemStack(RegistryHandler.BLOCK_STEAM_BOILER_ITEM);
+            return new ItemStack(RegistryHandler.BLOCK_STEAM_BOILER_ITEM.get());
         }
     };
 

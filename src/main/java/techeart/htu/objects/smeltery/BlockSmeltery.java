@@ -59,7 +59,7 @@ public class BlockSmeltery extends HTUBlock implements ITileEntityProvider
 
         keepInventory = true;
 
-        world.setBlockState(pos, RegistryHandler.BLOCK_SMELTERY.getDefaultState().with(FACING, state.get(FACING)).with(LIT, active), 3);
+        world.setBlockState(pos, RegistryHandler.BLOCK_SMELTERY.get().getDefaultState().with(FACING, state.get(FACING)).with(LIT, active), 3);
 
         keepInventory = false;
 

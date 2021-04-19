@@ -22,29 +22,29 @@ import java.util.function.Supplier;
 
 public class OreGeneration
 {
-     static ConfiguredFeature<?, ?> ORE_COPPER_CONFIG;
-     static ConfiguredFeature<?, ?> ORE_TIN_CONFIG;
 
-    public static void registerFeatures()
-    {
-        ORE_COPPER_CONFIG = registerOreFeature("ore_copper",RegistryHandler.ORE_COPPER,9,64,20);
-        ORE_TIN_CONFIG = registerOreFeature("ore_tin",RegistryHandler.ORE_TIN,9,64,20);
+    static List<ConfiguredFeature<?, ?>> OwerworldFeatureList = new ArrayList<>();
 
-        MainClass.LOGGER.info("OreFeature has been registered");
-    }
     public static void setupOreGenerator()
     {
-        StringBuilder biomesList= new StringBuilder();
+        //add Features to the list
+        OwerworldFeatureList.add(registerOreFeature("ore_copper",RegistryHandler.ORE_COPPER.get(),9,64,20));
+        OwerworldFeatureList.add(registerOreFeature("ore_tin",RegistryHandler.ORE_TIN.get(),9,64,20));
+        //success msg
+        MainClass.LOGGER.info("OreFeature has been registered");
 
+        StringBuilder biomesList= new StringBuilder();
         for (Map.Entry<RegistryKey<Biome>, Biome> biome : WorldGenRegistries.BIOME.getEntries()) {
 
             if (biome.getValue().getCategory().equals(Biome.Category.NETHER) || biome.getValue().getCategory().equals(Biome.Category.THEEND))
                 return;
-            addOres(biome.getValue(), ORE_COPPER_CONFIG);
+            for (ConfiguredFeature<?,?> feature: OwerworldFeatureList)
+                addOres(biome.getValue(), feature);
 
             biomesList.append(biome.getValue().getCategory().getName()).append(" ");
         }
-        MainClass.LOGGER.info("OreFeature has been added to the " + biomesList + "biome(s)");
+        //success msg (x2)
+        MainClass.LOGGER.info("OreFeature(s)"+OwerworldFeatureList.toString() +" has been added to the " + biomesList.toString() + "biome(s)");
     }
 
     private static ConfiguredFeature<?, ?> registerOreFeature(String name_id, Block ore,int maxSize,int maxHeight,int veinsPerChunk)

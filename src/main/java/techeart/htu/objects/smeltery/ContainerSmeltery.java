@@ -177,7 +177,7 @@ public class ContainerSmeltery extends Container
     @Override
     public boolean canInteractWith(PlayerEntity playerIn)
     {
-        return isWithinUsableDistance(IWorldPosCallable.of(tileEntity.getWorld(), tileEntity.getPos()), playerIn, RegistryHandler.BLOCK_SMELTERY);
+        return isWithinUsableDistance(IWorldPosCallable.of(tileEntity.getWorld(), tileEntity.getPos()), playerIn, RegistryHandler.BLOCK_SMELTERY.get());
     }
 
     public boolean isBurning() { return tileEntity.isBurning(); }

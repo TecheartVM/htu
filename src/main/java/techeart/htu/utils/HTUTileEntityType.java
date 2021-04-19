@@ -17,13 +17,13 @@ public class HTUTileEntityType
     public static final DeferredRegister<TileEntityType<?>> TILEENTITY_TYPES = DeferredRegister.create(ForgeRegistries.TILE_ENTITIES, MainClass.MODID);
 
     public static final RegistryObject<TileEntityType<TileEntityPrimitiveFurnace>> FURNACE =
-            TILEENTITY_TYPES.register("furnace", () -> TileEntityType.Builder.create(TileEntityPrimitiveFurnace::new, RegistryHandler.BLOCK_PRIMITIVE_FURNACE).build(null));
+            TILEENTITY_TYPES.register("furnace", () -> TileEntityType.Builder.create(TileEntityPrimitiveFurnace::new, RegistryHandler.BLOCK_PRIMITIVE_FURNACE.get()).build(null));
 
     public static final RegistryObject<TileEntityType<TileEntitySmeltery>> SMELTERY =
-            TILEENTITY_TYPES.register("smeltery", () -> TileEntityType.Builder.create(TileEntitySmeltery::new, RegistryHandler.BLOCK_SMELTERY).build(null));
+            TILEENTITY_TYPES.register("smeltery", () -> TileEntityType.Builder.create(TileEntitySmeltery::new, RegistryHandler.BLOCK_SMELTERY.get()).build(null));
 
     public static final RegistryObject<TileEntityType<TileEntitySteamBoiler>> STEAM_BOILER =
-            TILEENTITY_TYPES.register("steam_boiler", () -> TileEntityType.Builder.create(TileEntitySteamBoiler::new, RegistryHandler.BLOCK_STEAM_BOILER).build(null));
+            TILEENTITY_TYPES.register("steam_boiler", () -> TileEntityType.Builder.create(TileEntitySteamBoiler::new, RegistryHandler.BLOCK_STEAM_BOILER.get()).build(null));
 
     //TODO
     public static final RegistryObject<TileEntityType<TileEntityPipeFluid>> PIPE_FLUID =
