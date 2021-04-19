@@ -1,5 +1,6 @@
 package techeart.htu.objects.fluids;
 
+import net.minecraft.block.FlowingFluidBlock;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.util.Direction;
@@ -11,6 +12,8 @@ import net.minecraftforge.fluids.FluidAttributes;
 import net.minecraftforge.fluids.ForgeFlowingFluid;
 import techeart.htu.MainClass;
 import techeart.htu.utils.RegistryHandler;
+
+import java.util.function.Supplier;
 
 public abstract class FluidSteam
 {

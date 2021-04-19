@@ -13,6 +13,10 @@ import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipeSerializer;
 import net.minecraft.util.Util;
+import net.minecraft.util.registry.Registry;
+import net.minecraft.util.registry.WorldGenRegistries;
+import net.minecraft.world.gen.feature.Feature;
+import net.minecraft.world.gen.feature.OreFeatureConfig;
 import net.minecraft.world.server.ServerChunkProvider;
 import net.minecraftforge.client.event.RecipesUpdatedEvent;
 import net.minecraftforge.common.MinecraftForge;
@@ -26,12 +30,15 @@ import net.minecraftforge.fml.event.lifecycle.GatherDataEvent;
 import net.minecraftforge.fml.event.server.FMLServerStartedEvent;
 import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import techeart.htu.objects.boiler.GuiSteamBoiler;
 import techeart.htu.objects.smeltery.GuiSmeltery;
 import techeart.htu.recipes.alloying.AlloyRecipes;
 import techeart.htu.utils.FuelTemperatures;
 import techeart.htu.utils.HTUContainerType;
 import techeart.htu.utils.RegistryHandler;
+import techeart.htu.world.gen.OreGeneration;
 
 import java.util.Map;
 
@@ -43,9 +50,7 @@ public class MainClass
     public static final String MODID = "htu";
     public static final String MOD_NAME = "High Tech Universe";
 
-    //public static MainClass instance;
-
-    //static { FluidRegistry.enableUniversalBucket(); }
+    public static final Logger LOGGER = LogManager.getLogger();
 
     public MainClass()
     {
@@ -61,7 +66,9 @@ public class MainClass
 
     private void setup(final FMLCommonSetupEvent event)
     {
-        // some preinit code
+        //Oregen
+        OreGeneration.registerFeatures();
+        OreGeneration.setupOreGenerator();
     }
 
     private void setupClient(final FMLClientSetupEvent event)
@@ -120,7 +127,7 @@ public class MainClass
         @Override
         public ItemStack createIcon()
         {
-            return new ItemStack(RegistryHandler.BLOCK_STEAM_BOILER_ITEM.get());
+            return new ItemStack(RegistryHandler.BLOCK_STEAM_BOILER_ITEM);
         }
     };
 

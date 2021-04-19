@@ -97,7 +97,7 @@ public class ContainerSteamBoiler extends Container
     @Override
     public boolean canInteractWith(PlayerEntity playerIn)
     {
-        return isWithinUsableDistance(IWorldPosCallable.of(tileEntity.getWorld(), tileEntity.getPos()), playerIn, RegistryHandler.BLOCK_STEAM_BOILER.get());
+        return isWithinUsableDistance(IWorldPosCallable.of(tileEntity.getWorld(), tileEntity.getPos()), playerIn, RegistryHandler.BLOCK_STEAM_BOILER);
     }
 
     public ItemStack transferStackInSlot(PlayerEntity playerIn, int index)
