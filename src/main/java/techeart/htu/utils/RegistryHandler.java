@@ -20,7 +20,7 @@ import techeart.htu.objects.boiler.BlockSteamBoiler;
 import techeart.htu.objects.boiler.BlockSteamBoilerTop;
 import techeart.htu.objects.fluids.FluidSteam;
 import techeart.htu.objects.furnace.BlockPrimitiveFurnace;
-import techeart.htu.objects.pipes.BlockPipeFluid;
+import techeart.htu.objects.pipe.BlockPipeFluid;
 import techeart.htu.objects.pump.BlockWaterPump;
 import techeart.htu.objects.smeltery.BlockSmeltery;
 import techeart.htu.recipes.alloying.AlloyRecipe;

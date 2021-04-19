@@ -1,18 +1,14 @@
 package techeart.htu.objects.pipe;
 
-import net.minecraft.util.Direction;
-
-import java.util.List;
+import java.util.Set;
 
 public interface IPipe
 {
-    boolean canBeConnectedTo(Direction side);
+    IPipeGrid getGrid();
+    void setGrid(IPipeGrid grid);
 
-    List<IPipe> getAdjacentPipes();
+    void createGrid();
+    void updateGrid();
 
-    PipeGridFluid getGrid();
-
-    boolean setGrid(PipeGridFluid grid);
-
-    default void clearGrid() { setGrid(null); };
+    Set<PipeConnectionFluid> getConnections();
 }

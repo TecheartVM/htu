@@ -1,9 +1,11 @@
-package techeart.htu.objects.pipes;
+package techeart.htu.objects.pipe;
 
 import net.minecraft.block.*;
 import net.minecraft.block.material.Material;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.BlockItemUseContext;
+import net.minecraft.item.ItemStack;
 import net.minecraft.pathfinding.PathType;
 import net.minecraft.state.StateContainer;
 import net.minecraft.tileentity.TileEntity;
@@ -57,8 +59,29 @@ public class BlockPipeFluid extends SixWayBlock implements ITileEntityProvider
     }
 
     @Override
+    public void onBlockPlacedBy(World worldIn, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack)
+    {
+        super.onBlockPlacedBy(worldIn, pos, state, placer, stack);
+        TileEntity tileEntity = worldIn.getTileEntity(pos);
+        if(tileEntity != null && tileEntity.getType() == HTUTileEntityType.PIPE_FLUID.get())
+        {
+            if(!worldIn.isRemote) ((TileEntityPipeFluid)tileEntity).createGrid();
+        }
+    }
+
+    @Override
     public BlockState updatePostPlacement(BlockState stateIn, Direction facing, BlockState facingState, IWorld worldIn, BlockPos currentPos, BlockPos facingPos)
     {
+        //TODO optimization, I guess
+        if(!worldIn.isRemote())
+        {
+            TileEntity tileEntity = worldIn.getTileEntity(currentPos);
+            if(tileEntity != null && tileEntity.getType() == HTUTileEntityType.PIPE_FLUID.get())
+            {
+                ((TileEntityPipeFluid)tileEntity).updateGrid();
+            }
+        }
+
         return stateIn.with(FACING_TO_PROPERTY_MAP.get(facing), isConnectable(worldIn, facingPos, facing.getOpposite()));
     }
 
@@ -68,7 +91,8 @@ public class BlockPipeFluid extends SixWayBlock implements ITileEntityProvider
         TileEntity tileEntity = worldIn.getTileEntity(pos);
         if(tileEntity != null && tileEntity.getType() == HTUTileEntityType.PIPE_FLUID.get())
         {
-            if(!worldIn.isRemote) System.out.println("Fluid inside: " + ((TileEntityPipeFluid) tileEntity).getFluidInTank(0).getAmount());//TODO
+            //if(!worldIn.isRemote) System.out.println("Fluid inside: " + ((TileEntityPipeFluid) tileEntity).getFluidInTank(0).getAmount());//TODO
+            if(!worldIn.isRemote) System.out.println("Fluid inside: " + ((TileEntityPipeFluid)tileEntity).getFluidInTank(0).getAmount());
         }
         return super.onBlockActivated(state, worldIn, pos, player, handIn, hit);
     }
@@ -99,52 +123,5 @@ public class BlockPipeFluid extends SixWayBlock implements ITileEntityProvider
     public TileEntity createNewTileEntity(IBlockReader worldIn)
     {
         return HTUTileEntityType.PIPE_FLUID.get().create();
-    }
-
-//    @Nullable
-//    @Override
-//    public TileEntity createTileEntity(BlockState state, IBlockReader world)
-//    {
-//        return HTUTileEntityType.PIPE_FLUID.get().create();
-//    }
-
-//    @Override
-//    public void onNeighborChange(BlockState state, IWorldReader world, BlockPos pos, BlockPos neighbor)
-//    {
-//        TileEntity tileEntity = world.getTileEntity(pos);
-//        if(tileEntity != null && tileEntity.getType() == HTUTileEntityType.PIPE_FLUID.get())
-//        {
-//            if(!world.isRemote())
-//            {
-//                System.out.println(3);
-//                ((IPipe)tileEntity).updateConnections();
-//            }
-//        }
-//    }
-
-    @Override
-    public void onBlockAdded(BlockState state, World worldIn, BlockPos pos, BlockState oldState, boolean isMoving)
-    {
-        super.onBlockAdded(state, worldIn, pos, oldState, isMoving);
-        updateConnections(worldIn, pos);
-    }
-
-    @Override
-    public void onReplaced(BlockState state, World worldIn, BlockPos pos, BlockState newState, boolean isMoving)
-    {
-        super.onReplaced(state, worldIn, pos, newState, isMoving);
-        if(newState.getBlock() instanceof BlockPipeFluid) updateConnections(worldIn, pos);
-    }
-
-    private boolean updateConnections(IWorld world, BlockPos pos)
-    {
-        if(world.isRemote()) return false;
-        TileEntity tileEntity = world.getTileEntity(pos);
-        if(tileEntity != null && tileEntity.getType() == HTUTileEntityType.PIPE_FLUID.get())
-        {
-            ((IPipe)tileEntity).updateConnections();
-            return true;
-        }
-        return false;
     }
 }

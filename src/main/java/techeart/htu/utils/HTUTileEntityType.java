@@ -7,8 +7,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 import techeart.htu.MainClass;
 import techeart.htu.objects.boiler.TileEntitySteamBoiler;
 import techeart.htu.objects.furnace.TileEntityPrimitiveFurnace;
-import techeart.htu.objects.pipe.TileEntityGridTile;
-import techeart.htu.objects.pipes.TileEntityPipeFluid;
+import techeart.htu.objects.pipe.TileEntityPipeFluid;
 import techeart.htu.objects.pump.TileEntityWaterPump;
 import techeart.htu.objects.smeltery.TileEntitySmeltery;
 
@@ -31,8 +30,4 @@ public class HTUTileEntityType
 
     public static final RegistryObject<TileEntityType<TileEntityWaterPump>> WATER_PUMP =
             TILEENTITY_TYPES.register("water_pump", () -> TileEntityType.Builder.create(TileEntityWaterPump::new, RegistryHandler.BLOCK_WATER_PUMP.get()).build(null));
-
-    public static final RegistryObject<TileEntityType<TileEntityGridTile>> GRID_TILE =
-            TILEENTITY_TYPES.register("grid_tile", () -> TileEntityType.Builder.create(TileEntityGridTile::new, RegistryHandler.BLOCK_PIPE.get()).build(null));
-
 }

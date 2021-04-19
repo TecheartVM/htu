@@ -23,13 +23,17 @@ import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.GatherDataEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import techeart.htu.objects.boiler.GuiSteamBoiler;
+import techeart.htu.objects.pipe.HorizontalPipeGrid;
+import techeart.htu.objects.pipe.IPipeGrid;
 import techeart.htu.objects.smeltery.GuiSmeltery;
 import techeart.htu.recipes.alloying.AlloyRecipes;
 import techeart.htu.utils.FuelTemperatures;
 import techeart.htu.utils.HTUContainerType;
 import techeart.htu.utils.RegistryHandler;
 
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 // The value here should match an entry in the META-INF/mods.toml file
 @Mod("htu")
@@ -122,6 +126,23 @@ public class MainClass
             return new ItemStack(RegistryHandler.BLOCK_STEAM_BOILER_ITEM.get());
         }
     };
+
+    private static final Set<IPipeGrid> worldPipeGrids = new HashSet<>();
+    public static boolean registerPipeGrid(IPipeGrid grid) { return worldPipeGrids.add(grid); }
+    public static boolean unregisterPipeGrid(IPipeGrid grid) { return worldPipeGrids.remove(grid); }
+
+    @SubscribeEvent
+    public static void onServerTick(TickEvent.ServerTickEvent event)
+    {
+        for (IPipeGrid grid : worldPipeGrids) { grid.tick(); }
+        System.out.println("World grids count: " + worldPipeGrids.size());
+    }
+
+    @SubscribeEvent
+    public static void onClientTick(TickEvent.ClientTickEvent event)
+    {
+        //for (IPipeGrid grid : worldPipeGrids) { grid.tick(); }
+    }
 
 //    @SubscribeEvent
 //    public static void onPlayerTick(TickEvent.PlayerTickEvent event)
