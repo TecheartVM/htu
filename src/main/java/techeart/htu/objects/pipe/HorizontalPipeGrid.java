@@ -2,7 +2,9 @@ package techeart.htu.objects.pipe;
 
 import com.google.common.collect.Maps;
 import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Direction;
+import net.minecraft.world.World;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler.*;
@@ -24,11 +26,12 @@ public class HorizontalPipeGrid implements IPipeGrid, ISaveable
 
     private boolean dirty = false;
 
+    private World world = null;
+
     public HorizontalPipeGrid()
     {
         pipesContent.setValidator(fluidStack -> (fluidStack.isEmpty() || pipesContent.isEmpty() || pipesContent.getFluid().isFluidEqual(fluidStack)));
         MainClass.registerPipeGrid(this);
-        new NBTHandler().addSubscriber(this);
     }
 
     public void addExternal(PipeConnectionFluid connection) { externals.add(connection); }
@@ -193,6 +196,11 @@ public class HorizontalPipeGrid implements IPipeGrid, ISaveable
     @Override
     public boolean addPipe(IPipe pipe)
     {
+        if(this.world == null)
+        {
+            world = ((TileEntity)pipe).getWorld();
+            if(world != null && !world.isRemote) NBTHandler.get(world).addSubscriber(this);
+        }
         HorizontalPipeGrid pipeGrid = (HorizontalPipeGrid) pipe.getGrid();
         if(pipe instanceof TileEntityPipeFluid && pipeGrid != this)
         {
@@ -239,8 +247,15 @@ public class HorizontalPipeGrid implements IPipeGrid, ISaveable
     @Override
     public CompoundNBT writeToNBT(CompoundNBT nbt)
     {
-        System.out.println("Writing!");
         pipesContent.writeToNBT(nbt);
+        for (TileEntityPipeFluid pipe : pipes)
+        {
+            if(pipe == null) continue;
+            nbt.putInt("pipeX", pipe.getPos().getX());
+            nbt.putInt("pipeY", pipe.getPos().getY());
+            nbt.putInt("pipeZ", pipe.getPos().getZ());
+            break;
+        }
 
         dirty = false;
         return nbt;
@@ -249,8 +264,13 @@ public class HorizontalPipeGrid implements IPipeGrid, ISaveable
     @Override
     public void readFromNBT(CompoundNBT nbt)
     {
-        System.out.println("Reading!");
+        int x,y,z;
+        x = nbt.getInt("pipeX");
+        y = nbt.getInt("pipeY");
+        z = nbt.getInt("pipeZ");
+        TileEntity te;
         pipesContent.readFromNBT(nbt);
+        System.out.println("Loaded grid content: " + pipesContent.getFluid().getFluid() + " " + pipesContent.getFluid().getAmount() + "mb");
     }
 
     @Override
@@ -259,6 +279,7 @@ public class HorizontalPipeGrid implements IPipeGrid, ISaveable
         pipes.clear();
         externals.clear();
         MainClass.unregisterPipeGrid(this);
+        if(world != null && !world.isRemote) NBTHandler.get(world).removeSubscriber(this);
         return pipesContent.drain(pipesContent.getCapacity(), FluidAction.EXECUTE).copy();
     }
 }

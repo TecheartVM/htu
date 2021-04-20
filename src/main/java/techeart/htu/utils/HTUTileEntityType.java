@@ -10,6 +10,7 @@ import techeart.htu.objects.furnace.TileEntityPrimitiveFurnace;
 import techeart.htu.objects.pipe.TileEntityPipeFluid;
 import techeart.htu.objects.pump.TileEntityWaterPump;
 import techeart.htu.objects.smeltery.TileEntitySmeltery;
+import techeart.htu.objects.tank.TileEntityFluidTank;
 
 public class HTUTileEntityType
 {
@@ -24,10 +25,12 @@ public class HTUTileEntityType
     public static final RegistryObject<TileEntityType<TileEntitySteamBoiler>> STEAM_BOILER =
             TILEENTITY_TYPES.register("steam_boiler", () -> TileEntityType.Builder.create(TileEntitySteamBoiler::new, RegistryHandler.BLOCK_STEAM_BOILER.get()).build(null));
 
-    //TODO
-    public static final RegistryObject<TileEntityType<TileEntityPipeFluid>> PIPE_FLUID =
+    public static final RegistryObject<TileEntityType<TileEntityPipeFluid>> FLUID_PIPE =
             TILEENTITY_TYPES.register("pipe_fluid", () -> TileEntityType.Builder.create(TileEntityPipeFluid::new, RegistryHandler.BLOCK_PIPE.get()).build(null));
 
     public static final RegistryObject<TileEntityType<TileEntityWaterPump>> WATER_PUMP =
             TILEENTITY_TYPES.register("water_pump", () -> TileEntityType.Builder.create(TileEntityWaterPump::new, RegistryHandler.BLOCK_WATER_PUMP.get()).build(null));
+
+    public static final RegistryObject<TileEntityType<TileEntityFluidTank>> FLUID_TANK =
+            TILEENTITY_TYPES.register("fluid_tank", () -> TileEntityType.Builder.create(TileEntityFluidTank::new, RegistryHandler.BLOCK_FLUID_TANK.get()).build(null));
 }

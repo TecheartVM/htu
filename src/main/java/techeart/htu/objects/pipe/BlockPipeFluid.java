@@ -63,7 +63,7 @@ public class BlockPipeFluid extends SixWayBlock implements ITileEntityProvider
     {
         super.onBlockPlacedBy(worldIn, pos, state, placer, stack);
         TileEntity tileEntity = worldIn.getTileEntity(pos);
-        if(tileEntity != null && tileEntity.getType() == HTUTileEntityType.PIPE_FLUID.get())
+        if(tileEntity != null && tileEntity.getType() == HTUTileEntityType.FLUID_PIPE.get())
         {
             if(!worldIn.isRemote) ((TileEntityPipeFluid)tileEntity).createGrid();
         }
@@ -76,7 +76,7 @@ public class BlockPipeFluid extends SixWayBlock implements ITileEntityProvider
         if(!worldIn.isRemote())
         {
             TileEntity tileEntity = worldIn.getTileEntity(currentPos);
-            if(tileEntity != null && tileEntity.getType() == HTUTileEntityType.PIPE_FLUID.get())
+            if(tileEntity != null && tileEntity.getType() == HTUTileEntityType.FLUID_PIPE.get())
             {
                 ((TileEntityPipeFluid)tileEntity).updateGrid();
             }
@@ -89,7 +89,7 @@ public class BlockPipeFluid extends SixWayBlock implements ITileEntityProvider
     public ActionResultType onBlockActivated(BlockState state, World worldIn, BlockPos pos, PlayerEntity player, Hand handIn, BlockRayTraceResult hit)
     {
         TileEntity tileEntity = worldIn.getTileEntity(pos);
-        if(tileEntity != null && tileEntity.getType() == HTUTileEntityType.PIPE_FLUID.get())
+        if(tileEntity != null && tileEntity.getType() == HTUTileEntityType.FLUID_PIPE.get())
         {
             //if(!worldIn.isRemote) System.out.println("Fluid inside: " + ((TileEntityPipeFluid) tileEntity).getFluidInTank(0).getAmount());//TODO
             if(!worldIn.isRemote) System.out.println("Fluid inside: " + ((TileEntityPipeFluid)tileEntity).getFluidInTank(0).getAmount());
@@ -122,6 +122,6 @@ public class BlockPipeFluid extends SixWayBlock implements ITileEntityProvider
     @Override
     public TileEntity createNewTileEntity(IBlockReader worldIn)
     {
-        return HTUTileEntityType.PIPE_FLUID.get().create();
+        return HTUTileEntityType.FLUID_PIPE.get().create();
     }
 }

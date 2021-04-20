@@ -1,5 +1,7 @@
 package techeart.htu.objects.pipe;
 
+import net.minecraft.block.BlockState;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Direction;
 import net.minecraftforge.common.capabilities.Capability;
@@ -24,7 +26,7 @@ public class TileEntityPipeFluid extends TileEntity implements IFluidHandler, IP
 
     public TileEntityPipeFluid()
     {
-        super(HTUTileEntityType.PIPE_FLUID.get());
+        super(HTUTileEntityType.FLUID_PIPE.get());
     }
 
     /*IPipe*/
@@ -133,5 +135,18 @@ public class TileEntityPipeFluid extends TileEntity implements IFluidHandler, IP
             return CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY.orEmpty(cap, LazyOptional.of(() -> this));
 
         return super.getCapability(cap, side);
+    }
+
+    /*INBTSerializable*/
+    @Override
+    public void read(BlockState state, CompoundNBT nbt)
+    {
+        super.read(state, nbt);
+    }
+
+    @Override
+    public CompoundNBT write(CompoundNBT compound)
+    {
+        return super.write(compound);
     }
 }

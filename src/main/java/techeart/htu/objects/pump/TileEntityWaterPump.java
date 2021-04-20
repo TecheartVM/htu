@@ -52,6 +52,7 @@ public class TileEntityWaterPump extends TileEntity implements ITickableTileEnti
         fluidCapSteam = LazyOptional.of(() -> fluidHandler.getTank(1));
     }
 
+    /*ITickableTileEntity*/
     @Override
     public void tick()
     {
@@ -88,6 +89,7 @@ public class TileEntityWaterPump extends TileEntity implements ITickableTileEnti
         }
     }
 
+    /*TileEntity*/
     @Override
     public void read(BlockState state, CompoundNBT nbt)
     {
@@ -132,6 +134,7 @@ public class TileEntityWaterPump extends TileEntity implements ITickableTileEnti
         return super.getCapability(capability, facing);
     }
 
+    /*IFluidHandler*/
     @Override
     public int getTanks() { return 2; }
 

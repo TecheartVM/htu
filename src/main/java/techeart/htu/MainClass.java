@@ -39,6 +39,7 @@ import techeart.htu.objects.smeltery.GuiSmeltery;
 import techeart.htu.recipes.alloying.AlloyRecipes;
 import techeart.htu.utils.FuelTemperatures;
 import techeart.htu.utils.HTUContainerType;
+import techeart.htu.utils.NBTHandler;
 import techeart.htu.utils.RegistryHandler;
 import techeart.htu.world.gen.OreGeneration;
 
@@ -146,7 +147,7 @@ public class MainClass
     public static void onServerTick(TickEvent.ServerTickEvent event)
     {
         for (IPipeGrid grid : worldPipeGrids) { grid.tick(); }
-        System.out.println("World grids count: " + worldPipeGrids.size());
+        //System.out.println("World grids count: " + worldPipeGrids.size());
     }
 
     @SubscribeEvent

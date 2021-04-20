@@ -23,6 +23,7 @@ import techeart.htu.objects.furnace.BlockPrimitiveFurnace;
 import techeart.htu.objects.pipe.BlockPipeFluid;
 import techeart.htu.objects.pump.BlockWaterPump;
 import techeart.htu.objects.smeltery.BlockSmeltery;
+import techeart.htu.objects.tank.BlockFluidTank;
 import techeart.htu.recipes.alloying.AlloyRecipe;
 import techeart.htu.recipes.alloying.RecipeTypeAlloying;
 
@@ -81,9 +82,13 @@ public class RegistryHandler
     public static final RegistryObject<Block> BLOCK_PIPE = BLOCKS.register("block_pipe", BlockPipeFluid::new);
     public static final RegistryObject<Item> BLOCK_PIPE_ITEM = ITEMS.register("block_pipe", () -> new HTUItemBlock(BLOCK_PIPE.get(), MainClass.CREATIVE_TAB));
 
-    //pipe
+    //pump
     public static final RegistryObject<Block> BLOCK_WATER_PUMP = BLOCKS.register("block_water_pump", BlockWaterPump::new);
     public static final RegistryObject<Item> BLOCK_WATER_PUMP_ITEM = ITEMS.register("block_water_pump", () -> new HTUItemBlock(BLOCK_WATER_PUMP.get(), MainClass.CREATIVE_TAB));
+
+    //tank
+    public static final RegistryObject<Block> BLOCK_FLUID_TANK = BLOCKS.register("block_fluid_tank", BlockFluidTank::new);
+    public static final RegistryObject<Item> BLOCK_FLUID_TANK_ITEM = ITEMS.register("block_fluid_tank", () -> new HTUItemBlock(BLOCK_FLUID_TANK.get(), MainClass.CREATIVE_TAB));
 
     //fluid blocks
     public static final RegistryObject<FlowingFluidBlock> BLOCK_FLUID_STEAM = BLOCKS.register("block_fluid_steam",() -> new FlowingFluidBlock(() -> FluidSteam.STEAM, Block.Properties.create(Material.WATER).noDrops()));
