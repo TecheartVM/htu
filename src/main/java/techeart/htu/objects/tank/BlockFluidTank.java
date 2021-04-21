@@ -5,7 +5,6 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.ITileEntityProvider;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
-import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
@@ -18,10 +17,11 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.ToolType;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
-import net.minecraftforge.fluids.capability.IFluidHandler.*;
+import net.minecraftforge.fluids.capability.IFluidHandler.FluidAction;
 import net.minecraftforge.fluids.capability.IFluidHandlerItem;
 import techeart.htu.objects.HTUBlock;
 import techeart.htu.utils.HTUTileEntityType;
+import techeart.htu.utils.Utils;
 
 import javax.annotation.Nullable;
 
@@ -39,72 +39,60 @@ public class BlockFluidTank extends HTUBlock implements ITileEntityProvider
     @Override
     public ActionResultType onBlockActivated(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand handIn, BlockRayTraceResult hit)
     {
-        if(world.isRemote || player.isSneaking()) return ActionResultType.PASS;
+        //TODO: Fix Bug(Vanilla bottles does not supported!) + Rethink about _ActionResultType_  +   add the fish feature :)
+        if(world.isRemote || player.isSneaking()) return ActionResultType.SUCCESS;
         if(world.getTileEntity(pos) instanceof TileEntityFluidTank)
         {
-            TileEntityFluidTank tank = ((TileEntityFluidTank) world.getTileEntity(pos));
-            ItemStack heldItem = player.getHeldItem(handIn);
-            if(tank == null) return ActionResultType.PASS;
+            TileEntityFluidTank tankTileEntity = ((TileEntityFluidTank) world.getTileEntity(pos));
+            if(tankTileEntity == null) return ActionResultType.SUCCESS;
 
+            ItemStack heldItem = player.getHeldItem(handIn);
             if (heldItem.isEmpty())
             {
-                System.out.println("Fluid in tank: " + tank.getFluidInTank(0).getAmount());
+                Utils.playerInfoMessage("Fluid in tank: " + tankTileEntity.getFluidInTank(0).getAmount()+"mb",player);
                 return ActionResultType.SUCCESS;
             }
-            if (heldItem.getCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY).isPresent())
-            {
-                IFluidHandlerItem fhItem = heldItem.getCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY).orElse(null);
-                FluidStack fluidInItem;
-                //if tank is empty, trying to determine fluid in item stack. Else check amount of the required fluid.
-                if(tank.getFluidInTank(0).isEmpty()) fluidInItem = fhItem.drain(tank.getTankCapacity(0), FluidAction.SIMULATE);
-                else fluidInItem = fhItem.drain(new FluidStack(tank.getFluidInTank(0), tank.getTankCapacity(0) - tank.getFluidInTank(0).getAmount()), FluidAction.SIMULATE);
 
+            IFluidHandlerItem fluidHandlerItem = new ItemStack(heldItem.getItem(),1).getCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY).orElse(null);
+            if (fluidHandlerItem != null)
+            {
+                FluidStack fluidInItem;
+
+                //if tank is empty, trying to determine fluid in item stack. Else check amount of the required fluid.
+                if(tankTileEntity.getFluidInTank(0).isEmpty())
+                    fluidInItem = fluidHandlerItem.drain(tankTileEntity.getTankCapacity(0), FluidAction.SIMULATE);
+                else
+                    fluidInItem = fluidHandlerItem.drain(new FluidStack(tankTileEntity.getFluidInTank(0), tankTileEntity.getTankCapacity(0) - tankTileEntity.getFluidInTank(0).getAmount()), FluidAction.SIMULATE);
+
+                            //All systems operable. Lets rock!
                 if(fluidInItem.isEmpty())
                 {
-                    //try to drain tank
-                    System.out.println("Drain tank");
+                    //Ok, this item doesnt have any of fluid. Lets fix this!
 
                     //if draining with max value of integer isn't empty, this means that the item cannot be partially emptied (like vanilla bucket).
-                    if(!fhItem.drain(new FluidStack(tank.getFluidInTank(0), Integer.MAX_VALUE), FluidAction.SIMULATE).isEmpty()) return ActionResultType.PASS;
+                    if(!fluidHandlerItem.drain(new FluidStack(tankTileEntity.getFluidInTank(0), Integer.MAX_VALUE), FluidAction.SIMULATE).isEmpty()) return ActionResultType.SUCCESS;
+                    int filled = fluidHandlerItem.fill(tankTileEntity.getFluidInTank(0), player.isCreative() ? FluidAction.SIMULATE : FluidAction.EXECUTE);
+                    if(filled <= 0) return ActionResultType.SUCCESS;
+                    tankTileEntity.drain(new FluidStack(tankTileEntity.getFluidInTank(0), filled), FluidAction.EXECUTE);
 
-                    int filled = fhItem.fill(tank.getFluidInTank(0), FluidAction.EXECUTE);
-                    System.out.println("Filled: " + filled);
-                    if(filled <= 0) return ActionResultType.PASS;
-                    if(!heldItem.isItemEqual(fhItem.getContainer()))
-                    {
-                        heldItem.shrink(1);
-                        if(heldItem.isEmpty()) player.setHeldItem(handIn, ItemStack.EMPTY);
-                        if(!player.inventory.addItemStackToInventory(new ItemStack(fhItem.getContainer().getItem(), 1)))
-                        {
-                            world.addEntity(player.dropItem(new ItemStack(fhItem.getContainer().getItem(), 1), false, true));
-                        }
-                    }
-                    FluidStack drained = tank.drain(new FluidStack(tank.getFluidInTank(0), filled), FluidAction.EXECUTE);
-                    System.out.println("Drained: " + drained.getAmount());
-
+                    if(!heldItem.isItemEqual(fluidHandlerItem.getContainer()))
+                        Utils.addItemToPlayer(player,handIn,player.inventory.getSlotFor(heldItem),1,new ItemStack(fluidHandlerItem.getContainer().getItem(), 1));
                     return ActionResultType.SUCCESS;
                 }
-                else    //TODO add the fish feature :)
+                else
                 {
-                    //fill tank
-                    int filled = tank.fill(fluidInItem, FluidAction.EXECUTE);
-                    ItemStack copy = heldItem.copy();
-                    copy.getCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY).orElse(null).drain(new FluidStack(fluidInItem, filled), FluidAction.EXECUTE);
-                    copy = copy.getCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY).orElse(null).getContainer();
-                    if(!heldItem.isItemEqual(copy));
-                    {
-                        heldItem.shrink(1);
-                        if(heldItem.isEmpty()) player.setHeldItem(handIn, ItemStack.EMPTY);
-                        if(!player.inventory.addItemStackToInventory(new ItemStack(copy.getItem(), 1)))
-                        {
-                            world.addEntity(player.dropItem(new ItemStack(copy.getItem(), 1), false, true));
-                        }
-                    }
+                    //It seems like this item have suitable fluid... Lets pour into tank!
+                    int filled = tankTileEntity.fill(fluidInItem, FluidAction.EXECUTE);
+                    fluidHandlerItem.drain(new FluidStack(fluidInItem, filled), player.isCreative() ? FluidAction.SIMULATE : FluidAction.EXECUTE);
+                    ItemStack heldItemContainer = fluidHandlerItem.getContainer();
+
+                    if(!heldItem.isItemEqual(heldItemContainer))
+                        Utils.addItemToPlayer(player,handIn,player.inventory.getSlotFor(heldItem),1,new ItemStack(heldItemContainer.getItem(), 1));
                     return ActionResultType.SUCCESS;
                 }
             }
         }
-        return ActionResultType.PASS;
+        return ActionResultType.SUCCESS;
     }
 
     @Nullable

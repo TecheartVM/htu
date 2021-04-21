@@ -44,7 +44,7 @@ public class OreGeneration
             biomesList.append(biome.getValue().getCategory().getName()).append(" ");
         }
         //success msg (x2)
-        MainClass.LOGGER.info("OreFeature(s)"+OwerworldFeatureList.toString() +" has been added to the " + biomesList.toString() + "biome(s)");
+        MainClass.LOGGER.info("OreFeature(s) "+OwerworldFeatureList.toString() +" has been added to the " + biomesList.toString() + "biome(s)");
     }
 
     private static ConfiguredFeature<?, ?> registerOreFeature(String name_id, Block ore,int maxSize,int maxHeight,int veinsPerChunk)
