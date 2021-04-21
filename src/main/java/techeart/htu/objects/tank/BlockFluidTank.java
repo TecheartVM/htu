@@ -42,6 +42,7 @@ public class BlockFluidTank extends HTUBlock implements ITileEntityProvider
         //       + Rethink about _ActionResultType_
         //       + move tank tile interaction code to the separate method
         //       + add the fish feature :)
+
         if(world.isRemote || player.isSneaking()) return ActionResultType.SUCCESS;
         if(world.getTileEntity(pos) instanceof TileEntityFluidTank)
         {
@@ -56,8 +57,11 @@ public class BlockFluidTank extends HTUBlock implements ITileEntityProvider
             }
 
             IFluidHandlerItem itemFluidHandler = new ItemStack(heldItem.getItem(),1).getCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY).orElse(null);
+
             if (itemFluidHandler != null)
             {
+                SoundEvent sound;
+
                 FluidStack fluidInItem;
 
                 //if tank is empty, trying to determine fluid in item stack. Else check amount of the required fluid.
@@ -72,48 +76,28 @@ public class BlockFluidTank extends HTUBlock implements ITileEntityProvider
                     //if draining with max value of integer isn't empty, this means that the item cannot be partially emptied (like vanilla bucket).
                     if(!itemFluidHandler.drain(new FluidStack(tankTile.getFluidInTank(0), Integer.MAX_VALUE), FluidAction.SIMULATE).isEmpty()) return ActionResultType.SUCCESS;
 
-                    //Ok, this item doesn't have any fluid. So, drain the tank and fill an item!
+                    //Ok, this item doesn't have any fluid (fill item + drain tank)
+
                     //check if we can fill item with tank fluid
-                    int filled = itemFluidHandler.fill(tankTile.getFluidInTank(0), FluidAction.SIMULATE);
+                    int filled = itemFluidHandler.fill(tankTile.getFluidInTank(0), player.isCreative() ? FluidAction.SIMULATE : FluidAction.EXECUTE);
                     //if can't, do nothing
                     if(filled <= 0) return ActionResultType.SUCCESS;
-                    //if can, drain tank and fill item with drained fluid
-                    FluidStack drained = tankTile.drain(new FluidStack(tankTile.getFluidInTank(0), filled), FluidAction.EXECUTE);
-                    if(!player.isCreative())
-                    {
-                        ItemStack newItem = new ItemStack(heldItem.getItem(), 1);
-                        IFluidHandlerItem newHandler = newItem.getCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY).orElse(null);
-                        int f = newHandler.fill(drained, FluidAction.EXECUTE);
-                        newItem = newHandler.getContainer();
-                        heldItem.shrink(1);
-                        if(heldItem.isEmpty()) player.inventory.add(player.inventory.currentItem, newItem);
-                        else if(!heldItem.isItemEqual(newItem) || !heldItem.isStackable() || heldItem.getCount() >= heldItem.getMaxStackSize() || heldItem.getCount() >= player.inventory.getInventoryStackLimit())
-                        {
-                            if(!player.inventory.addItemStackToInventory(newItem))
-                                player.dropItem(newItem, false, true);
-                        }
-                        else heldItem.grow(1);
-                    }
+                    //if can, drain tank and fill item with drained fluid (and save soundEvent ;) )
+                    sound =  tankTile.drain(new FluidStack(tankTile.getFluidInTank(0), filled), FluidAction.EXECUTE)
+                            .getFluid().getAttributes().getFillSound();
 
-                    SoundEvent fillSound = drained.getFluid().getAttributes().getFillSound();
-                    world.playSound(null, pos, fillSound, SoundCategory.BLOCKS, 1.0F, 1.0F);
-
-                    return ActionResultType.SUCCESS;
+                    Utils.addItemToPlayer(player,handIn,1,new ItemStack(itemFluidHandler.getContainer().getItem(), 1));
                 }
                 else
                 {
-                    //It seems like this item have suitable fluid... Lets fill tank!
+                    //It seems like this item have suitable fluid... Lets fill tank! (fill tank + drain item)
                     int filled = tankTile.fill(fluidInItem, FluidAction.EXECUTE);
-                    FluidStack drained = itemFluidHandler.drain(new FluidStack(fluidInItem, filled), player.isCreative() ? FluidAction.SIMULATE : FluidAction.EXECUTE);
-                    ItemStack heldItemContainer = itemFluidHandler.getContainer();
-
-                    SoundEvent emptySound = drained.getFluid().getAttributes().getEmptySound();
-                    world.playSound(null, pos, emptySound, SoundCategory.BLOCKS, 1.0F, 1.0F);
-
-                    if(!heldItem.isItemEqual(heldItemContainer))
-                        Utils.addItemToPlayer(player,player.inventory.getSlotFor(heldItem),1,new ItemStack(heldItemContainer.getItem(), 1));
-                    return ActionResultType.SUCCESS;
+                    sound  = itemFluidHandler.drain(new FluidStack(fluidInItem, filled), player.isCreative() ? FluidAction.SIMULATE : FluidAction.EXECUTE)
+                            .getFluid().getAttributes().getEmptySound();
+                    Utils.addItemToPlayer(player,handIn,1,new ItemStack(itemFluidHandler.getContainer().getItem(), 1));
                 }
+                world.playSound(null, pos,sound, SoundCategory.BLOCKS, 1.0F, 1.0F);
+                return ActionResultType.SUCCESS;
             }
         }
         return ActionResultType.SUCCESS;

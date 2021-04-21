@@ -19,20 +19,22 @@ public class Utils
         playerEntity.sendStatusMessage(ITextComponent.getTextComponentOrEmpty(info), true);
     }
 
-    public static void addItemToPlayer(PlayerEntity player, int inventorySlot, int shrinkAmount, ItemStack newItem)
+    public static void addItemToPlayer(PlayerEntity player, Hand handIn, int shrinkAmount ,ItemStack newItem)
     {
-        ItemStack oldItem = player.inventory.getStackInSlot(inventorySlot);
-        oldItem.shrink(shrinkAmount);
-        //player.inventory.setInventorySlotContents(inventorySlot, oldItem);
-        if(!player.inventory.add(inventorySlot,newItem))
-            if(!player.inventory.addItemStackToInventory(newItem))
+        ItemStack oldItem = player.getHeldItem(handIn);
+        if(oldItem.getCount() !=1) {
+            oldItem.shrink(shrinkAmount);
+            if (!player.inventory.addItemStackToInventory(newItem))
                 player.dropItem(newItem, false, true);
+        }
+        else
+            player.setHeldItem(handIn,newItem);
     }
 
     public static void addItemToPlayer(PlayerEntity player, ItemStack oldItem, int shrinkAmount ,ItemStack newItem)
     {
         oldItem.shrink(shrinkAmount);
-        if(!player.inventory.add(player.inventory.getSlotFor(oldItem),newItem))
+        if(!player.inventory.add(player.inventory.getSlotFor(oldItem),newItem)) //TODO: Check this thing
             if(!player.inventory.addItemStackToInventory(newItem))
                 player.dropItem(newItem, false, true);
     }
