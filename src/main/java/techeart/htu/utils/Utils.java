@@ -7,7 +7,8 @@ import net.minecraft.util.text.ITextComponent;
 
 import java.util.UUID;
 
-public class Utils {
+public class Utils
+{
     public static void playerChatMessage(String info, PlayerEntity playerEntity)
     {
         playerEntity.sendMessage(ITextComponent.getTextComponentOrEmpty(info), UUID.randomUUID());
@@ -18,11 +19,11 @@ public class Utils {
         playerEntity.sendStatusMessage(ITextComponent.getTextComponentOrEmpty(info), true);
     }
 
-    public static void addItemToPlayer(PlayerEntity player, Hand handIn, int inventorySlot, int shrinkAmount ,ItemStack newItem)
+    public static void addItemToPlayer(PlayerEntity player, int inventorySlot, int shrinkAmount, ItemStack newItem)
     {
-        ItemStack oldItem = player.getHeldItem(handIn);
-
+        ItemStack oldItem = player.inventory.getStackInSlot(inventorySlot);
         oldItem.shrink(shrinkAmount);
+        //player.inventory.setInventorySlotContents(inventorySlot, oldItem);
         if(!player.inventory.add(inventorySlot,newItem))
             if(!player.inventory.addItemStackToInventory(newItem))
                 player.dropItem(newItem, false, true);
