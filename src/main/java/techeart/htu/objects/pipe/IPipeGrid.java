@@ -2,8 +2,11 @@ package techeart.htu.objects.pipe;
 
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraftforge.fluids.FluidStack;
+import techeart.htu.utils.ISaveable;
 
-public interface IPipeGrid
+import java.util.UUID;
+
+public interface IPipeGrid extends ISaveable
 {
     boolean isEmpty();
     boolean isFull();
@@ -13,8 +16,11 @@ public interface IPipeGrid
     void tick();
 
     void markDirty();
+    boolean isDirty();
     CompoundNBT writeToNBT(CompoundNBT nbt);
     void readFromNBT(CompoundNBT nbt);
+
+    UUID getId();
 
     FluidStack destroy();
 }

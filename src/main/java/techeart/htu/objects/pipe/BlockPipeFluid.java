@@ -65,7 +65,7 @@ public class BlockPipeFluid extends SixWayBlock implements ITileEntityProvider
         TileEntity tileEntity = worldIn.getTileEntity(pos);
         if(tileEntity != null && tileEntity.getType() == HTUTileEntityType.FLUID_PIPE.get())
         {
-            if(!worldIn.isRemote) ((TileEntityPipeFluid)tileEntity).createGrid();
+            //if(!worldIn.isRemote) ((TileEntityPipeFluid)tileEntity).createGrid();
         }
     }
 

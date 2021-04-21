@@ -74,7 +74,8 @@ public class BlockFluidTank extends HTUBlock implements ITileEntityProvider
                 if(fluidInItem.isEmpty())
                 {
                     //if draining with max value of integer isn't empty, this means that the item cannot be partially emptied (like vanilla bucket).
-                    if(!itemFluidHandler.drain(new FluidStack(tankTile.getFluidInTank(0), Integer.MAX_VALUE), FluidAction.SIMULATE).isEmpty()) return ActionResultType.SUCCESS;
+                    if(!itemFluidHandler.drain(new FluidStack(tankTile.getFluidInTank(0), Integer.MAX_VALUE), FluidAction.SIMULATE).isEmpty())
+                        return ActionResultType.SUCCESS;
 
                     //Ok, this item doesn't have any fluid (fill item + drain tank)
 
@@ -83,8 +84,7 @@ public class BlockFluidTank extends HTUBlock implements ITileEntityProvider
                     //if can't, do nothing
                     if(filled <= 0) return ActionResultType.SUCCESS;
                     //if can, drain tank and fill item with drained fluid (and save soundEvent ;) )
-                    sound =  tankTile.drain(new FluidStack(tankTile.getFluidInTank(0), filled), FluidAction.EXECUTE)
-                            .getFluid().getAttributes().getFillSound();
+                    sound = tankTile.drain(new FluidStack(tankTile.getFluidInTank(0), filled), FluidAction.EXECUTE).getFluid().getAttributes().getFillSound();
 
                     Utils.addItemToPlayer(player,handIn,1,new ItemStack(itemFluidHandler.getContainer().getItem(), 1));
                 }

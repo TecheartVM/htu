@@ -2,6 +2,7 @@ package techeart.htu.objects.pipe;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.tileentity.ITickableTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Direction;
 import net.minecraftforge.common.capabilities.Capability;
@@ -10,19 +11,24 @@ import net.minecraftforge.fluids.FluidAttributes;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler;
+import techeart.htu.MainClass;
 import techeart.htu.utils.HTUTileEntityType;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
-public class TileEntityPipeFluid extends TileEntity implements IFluidHandler, IPipe
+public class TileEntityPipeFluid extends TileEntity implements ITickableTileEntity, IFluidHandler, IPipe
 {
     public static int CAPACITY = FluidAttributes.BUCKET_VOLUME;
     public static int TRANSFER_RATE = 125;
 
     private HorizontalPipeGrid grid = null;
+    private UUID gridId;
+
+    private int ticksExisted = 0;
 
     public TileEntityPipeFluid()
     {
@@ -38,6 +44,7 @@ public class TileEntityPipeFluid extends TileEntity implements IFluidHandler, IP
     {
         if(!(grid instanceof HorizontalPipeGrid)) return;
         this.grid = (HorizontalPipeGrid)grid;
+        gridId = grid.getId();
         for (PipeConnectionFluid c : getConnections())
         {
             if(!c.isPipe()) { ((HorizontalPipeGrid) grid).addExternal(c); }
@@ -100,7 +107,11 @@ public class TileEntityPipeFluid extends TileEntity implements IFluidHandler, IP
 
     @Nonnull
     @Override
-    public FluidStack getFluidInTank(int tank) { return ((HorizontalPipeGrid)getGrid()).getFluidPerPipe(); }
+    public FluidStack getFluidInTank(int tank)
+    {
+        System.out.println(getGrid().getId());
+        return ((HorizontalPipeGrid)getGrid()).getFluidPerPipe();
+    }
 
     @Override
     public boolean isFluidValid(int tank, @Nonnull FluidStack stack) { return ((HorizontalPipeGrid)getGrid()).isFluidValid(stack); }
@@ -141,12 +152,37 @@ public class TileEntityPipeFluid extends TileEntity implements IFluidHandler, IP
     @Override
     public void read(BlockState state, CompoundNBT nbt)
     {
+        System.out.println("PIPE");
+        if(!nbt.hasUniqueId("gridId")) return;
+        gridId = nbt.getUniqueId("gridId");
+        System.out.println("Grid id: " + gridId);
         super.read(state, nbt);
     }
 
     @Override
     public CompoundNBT write(CompoundNBT compound)
     {
+        if(grid != null) compound.putUniqueId("gridId", grid.getId());
         return super.write(compound);
+    }
+
+    @Override
+    public void tick()
+    {
+        if(world.isRemote) return;
+        if(!MainClass.gridsManager.isLoaded()) return;
+        if(grid != null) return;
+        if(gridId == null)
+        {
+            System.out.println("NO ID!!!");
+            createGrid();
+            return;
+        }
+        ((HorizontalPipeGrid) MainClass.gridsManager.getGrid(gridId)).addPipe(this);
+        if(grid == null)
+        {
+            System.out.println("NO GRID!!!");
+            createGrid();
+        }
     }
 }

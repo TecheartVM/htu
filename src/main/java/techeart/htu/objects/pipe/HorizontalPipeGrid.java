@@ -10,14 +10,13 @@ import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler.*;
 import net.minecraftforge.fluids.capability.templates.FluidTank;
 import techeart.htu.MainClass;
-import techeart.htu.utils.ISaveable;
-import techeart.htu.utils.NBTHandler;
 
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
-public class HorizontalPipeGrid implements IPipeGrid, ISaveable
+public class HorizontalPipeGrid implements IPipeGrid
 {
     private final Set<TileEntityPipeFluid> pipes = new HashSet();
     private final Set<PipeConnectionFluid> externals = new HashSet<>();
@@ -27,11 +26,18 @@ public class HorizontalPipeGrid implements IPipeGrid, ISaveable
     private boolean dirty = false;
 
     private World world = null;
+    private UUID id;
 
     public HorizontalPipeGrid()
     {
+        //MainClass.registerPipeGrid(this);
+        this(UUID.randomUUID());
+    }
+
+    public HorizontalPipeGrid(UUID id)
+    {
         pipesContent.setValidator(fluidStack -> (fluidStack.isEmpty() || pipesContent.isEmpty() || pipesContent.getFluid().isFluidEqual(fluidStack)));
-        MainClass.registerPipeGrid(this);
+        this.id = id;
     }
 
     public void addExternal(PipeConnectionFluid connection) { externals.add(connection); }
@@ -59,6 +65,7 @@ public class HorizontalPipeGrid implements IPipeGrid, ISaveable
             System.out.println("No pipes in grid!");
             return FluidStack.EMPTY;
         }
+        System.out.println("Fluid in grid: " + pipesContent.getFluid().getAmount());
         return new FluidStack(pipesContent.getFluid(), Math.floorDiv(pipesContent.getFluidAmount(), pipes.size()));
     }
 
@@ -199,7 +206,7 @@ public class HorizontalPipeGrid implements IPipeGrid, ISaveable
         if(this.world == null)
         {
             world = ((TileEntity)pipe).getWorld();
-            if(world != null && !world.isRemote) NBTHandler.get(world).addSubscriber(this);
+            if(world != null && !world.isRemote) MainClass.gridsManager.registerGrid(this);
         }
         HorizontalPipeGrid pipeGrid = (HorizontalPipeGrid) pipe.getGrid();
         if(pipe instanceof TileEntityPipeFluid && pipeGrid != this)
@@ -238,6 +245,7 @@ public class HorizontalPipeGrid implements IPipeGrid, ISaveable
         markDirty();
     }
 
+    /*data management*/
     @Override
     public void markDirty() { dirty = true; }
 
@@ -247,15 +255,9 @@ public class HorizontalPipeGrid implements IPipeGrid, ISaveable
     @Override
     public CompoundNBT writeToNBT(CompoundNBT nbt)
     {
+        nbt.putUniqueId("id", id);
         pipesContent.writeToNBT(nbt);
-        for (TileEntityPipeFluid pipe : pipes)
-        {
-            if(pipe == null) continue;
-            nbt.putInt("pipeX", pipe.getPos().getX());
-            nbt.putInt("pipeY", pipe.getPos().getY());
-            nbt.putInt("pipeZ", pipe.getPos().getZ());
-            break;
-        }
+        System.out.println("Written fluid: " + pipesContent.readFromNBT(nbt).getFluid().getAmount() + "  Grid id: " + id);
 
         dirty = false;
         return nbt;
@@ -264,22 +266,22 @@ public class HorizontalPipeGrid implements IPipeGrid, ISaveable
     @Override
     public void readFromNBT(CompoundNBT nbt)
     {
-        int x,y,z;
-        x = nbt.getInt("pipeX");
-        y = nbt.getInt("pipeY");
-        z = nbt.getInt("pipeZ");
-        TileEntity te;
         pipesContent.readFromNBT(nbt);
+
         System.out.println("Loaded grid content: " + pipesContent.getFluid().getFluid() + " " + pipesContent.getFluid().getAmount() + "mb");
     }
 
     @Override
+    public UUID getId() { return id; }
+
+    @Override
     public FluidStack destroy()
     {
+        System.out.println("Destroying grid!");
         pipes.clear();
         externals.clear();
-        MainClass.unregisterPipeGrid(this);
-        if(world != null && !world.isRemote) NBTHandler.get(world).removeSubscriber(this);
+        //MainClass.unregisterPipeGrid(this);
+        if(world != null && !world.isRemote) MainClass.gridsManager.unregisterGrid(this); //NBTHandler.get(world).removeSubscriber(this);
         return pipesContent.drain(pipesContent.getCapacity(), FluidAction.EXECUTE).copy();
     }
 }

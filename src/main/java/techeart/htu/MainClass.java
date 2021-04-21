@@ -1,46 +1,32 @@
 package techeart.htu;
 
 import com.google.common.collect.Maps;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ScreenManager;
-import net.minecraft.client.multiplayer.ClientChunkProvider;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.RenderTypeLookup;
-import net.minecraft.data.DataGenerator;
 import net.minecraft.fluid.Fluid;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipeSerializer;
 import net.minecraft.util.Util;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.util.registry.WorldGenRegistries;
-import net.minecraft.world.gen.feature.Feature;
-import net.minecraft.world.gen.feature.OreFeatureConfig;
-import net.minecraft.world.server.ServerChunkProvider;
 import net.minecraftforge.client.event.RecipesUpdatedEvent;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.fml.event.lifecycle.GatherDataEvent;
-import net.minecraftforge.fml.event.server.FMLServerStartedEvent;
 import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
+import net.minecraftforge.fml.event.server.FMLServerStoppingEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import techeart.htu.objects.boiler.GuiSteamBoiler;
-import techeart.htu.objects.pipe.HorizontalPipeGrid;
 import techeart.htu.objects.pipe.IPipeGrid;
 import techeart.htu.objects.smeltery.GuiSmeltery;
 import techeart.htu.recipes.alloying.AlloyRecipes;
-import techeart.htu.utils.FuelTemperatures;
-import techeart.htu.utils.HTUContainerType;
-import techeart.htu.utils.NBTHandler;
-import techeart.htu.utils.RegistryHandler;
+import techeart.htu.utils.*;
 import techeart.htu.world.gen.OreGeneration;
 
 import java.util.HashSet;
@@ -56,6 +42,8 @@ public class MainClass
     public static final String MOD_NAME = "High Tech Universe";
 
     public static final Logger LOGGER = LogManager.getLogger();
+
+    public static final WorldGridsManager gridsManager = new WorldGridsManager();
 
     //public static MainClass instance;
 
@@ -76,6 +64,7 @@ public class MainClass
     private void setup(final FMLCommonSetupEvent event)
     {
         //Oregen
+        //MinecraftForge.EVENT_BUS.register(gridsManager);
         OreGeneration.setupOreGenerator();
     }
 
@@ -118,6 +107,15 @@ public class MainClass
         FuelTemperatures.init();
     }
 
+    @SubscribeEvent
+    public void onWorldLoading(WorldEvent.Load event)
+    {
+        if(!event.getWorld().isRemote())
+        {
+            //gridsManager.loadOrCreate();
+        }
+    }
+
     // You can use EventBusSubscriber to automatically subscribe events on the contained class (this is subscribing to the MOD
     // Event bus for receiving Registry Events)
 //    @Mod.EventBusSubscriber(bus=Mod.EventBusSubscriber.Bus.MOD)
@@ -146,7 +144,8 @@ public class MainClass
     @SubscribeEvent
     public static void onServerTick(TickEvent.ServerTickEvent event)
     {
-        for (IPipeGrid grid : worldPipeGrids) { grid.tick(); }
+        //for (IPipeGrid grid : worldPipeGrids) { grid.tick(); }
+        gridsManager.tick();
         //System.out.println("World grids count: " + worldPipeGrids.size());
     }
 
@@ -154,6 +153,21 @@ public class MainClass
     public static void onClientTick(TickEvent.ClientTickEvent event)
     {
         //for (IPipeGrid grid : worldPipeGrids) { grid.tick(); }
+    }
+
+    @SubscribeEvent
+    public static void onWorldTick(TickEvent.WorldTickEvent event)
+    {
+        if(event.side.isServer() && event.phase == TickEvent.Phase.END)
+        {
+            gridsManager.onServerWorldTick(event.world);
+        }
+    }
+
+    @SubscribeEvent
+    public static void onServerStopping(FMLServerStoppingEvent event)
+    {
+        gridsManager.reset();
     }
 
 //    @SubscribeEvent

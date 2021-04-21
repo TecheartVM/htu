@@ -44,14 +44,14 @@ public class NBTHandler extends WorldSavedData
     public void read(CompoundNBT nbt)
     {
         System.out.println("Reading...");
-        subscribers.forEach(item -> item.readFromNBT(nbt));
+        //subscribers.forEach(item -> item.readFromNBT(nbt));
     }
 
     @Override
     public CompoundNBT write(CompoundNBT nbt)
     {
         System.out.println("Writing...");
-        subscribers.forEach(item -> item.writeToNBT(nbt));
+        //subscribers.forEach(item -> item.writeToNBT(nbt));
         return nbt;
     }
 }
