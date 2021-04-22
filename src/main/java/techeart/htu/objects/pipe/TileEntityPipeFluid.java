@@ -49,14 +49,23 @@ public class TileEntityPipeFluid extends TileEntity implements ITickableTileEnti
         {
             if(!c.isPipe()) { ((HorizontalPipeGrid) grid).addExternal(c); }
             else if(c.side.getAxis() != Direction.Axis.Y) grid.addPipe((IPipe) c.tile);
-            else ((HorizontalPipeGrid) grid).addExternal(c);
+            else
+            {
+                ((HorizontalPipeGrid) grid).addExternal(c);
+                //if we have external pipe at the bottom or top, we need to add this pipe to its externals list
+                // because the neighbour can not attach this pipe acquire it behave an own grid
+                LazyOptional<IFluidHandler> lo = getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, c.side.getOpposite());
+                if(!lo.isPresent()) continue;
+                IFluidHandler fh = lo.orElse(null);
+                ((HorizontalPipeGrid)((TileEntityPipeFluid) c.tile).getGrid()).addExternal(new PipeConnectionFluid(this, fh, c.side.getOpposite()));
+            }
         }
         this.grid.recalculateCapacity();
     }
 
     @Override
-    public void createGrid() {
-        System.out.println("Created grid!"); new HorizontalPipeGrid().addPipe(this); }
+    public void createGrid() { System.out.println("Created grid!"); new HorizontalPipeGrid().addPipe(this);
+        System.out.println("Grid id: " + grid.getId()); }
 
     @Override
     public void updateGrid() { setGrid(grid); }
@@ -109,29 +118,66 @@ public class TileEntityPipeFluid extends TileEntity implements ITickableTileEnti
     @Override
     public FluidStack getFluidInTank(int tank)
     {
-        System.out.println(getGrid().getId());
+        if(getGrid() == null)
+        {
+            MainClass.LOGGER.warn("Can't get fluid in tank. Pipe grid is null!");
+            return FluidStack.EMPTY;
+        }
         return ((HorizontalPipeGrid)getGrid()).getFluidPerPipe();
     }
 
     @Override
-    public boolean isFluidValid(int tank, @Nonnull FluidStack stack) { return ((HorizontalPipeGrid)getGrid()).isFluidValid(stack); }
+    public boolean isFluidValid(int tank, @Nonnull FluidStack stack)
+    {
+        if(getGrid() == null)
+        {
+            MainClass.LOGGER.warn("Can't validate fluid. Pipe grid is null!");
+            return false;
+        }
+        return ((HorizontalPipeGrid)getGrid()).isFluidValid(stack);
+    }
 
     @Override
-    public int fill(FluidStack resource, FluidAction action) { return ((HorizontalPipeGrid)getGrid()).fill(resource, action); }
+    public int fill(FluidStack resource, FluidAction action)
+    {
+        if(getGrid() == null)
+        {
+            MainClass.LOGGER.warn("Can't fill pipe tank. Pipe grid is null!");
+            return 0;
+        }
+        return ((HorizontalPipeGrid)getGrid()).fill(resource, action);
+    }
 
     @Nonnull
     @Override
-    public FluidStack drain(FluidStack resource, FluidAction action) { return ((HorizontalPipeGrid)getGrid()).drain(resource, action); }
+    public FluidStack drain(FluidStack resource, FluidAction action)
+    {
+        if(getGrid() == null)
+        {
+            MainClass.LOGGER.warn("Can't drain pipe tank with resource. Pipe grid is null!");
+            return FluidStack.EMPTY;
+        }
+        return ((HorizontalPipeGrid)getGrid()).drain(resource, action);
+    }
 
     @Nonnull
     @Override
-    public FluidStack drain(int maxDrain, FluidAction action) { return ((HorizontalPipeGrid)getGrid()).drain(maxDrain, action); }
+    public FluidStack drain(int maxDrain, FluidAction action)
+    {
+        if(getGrid() == null)
+        {
+            MainClass.LOGGER.warn("Can't drain pipe tank. Pipe grid is null!");
+            return FluidStack.EMPTY;
+        }
+        return ((HorizontalPipeGrid)getGrid()).drain(maxDrain, action);
+    }
 
     /*ICapabilityProvider*/
     @Nonnull
     @Override
     public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap)
     {
+        if(getGrid() == null) return super.getCapability(cap);
         if (cap == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY)
             return CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY.orEmpty(cap, LazyOptional.of(() -> this));
 
@@ -142,6 +188,7 @@ public class TileEntityPipeFluid extends TileEntity implements ITickableTileEnti
     @Override
     public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, @Nullable Direction side)
     {
+        if(getGrid() == null) return super.getCapability(cap, side);
         if (cap == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY)
             return CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY.orEmpty(cap, LazyOptional.of(() -> this));
 
@@ -152,10 +199,9 @@ public class TileEntityPipeFluid extends TileEntity implements ITickableTileEnti
     @Override
     public void read(BlockState state, CompoundNBT nbt)
     {
-        System.out.println("PIPE");
         if(!nbt.hasUniqueId("gridId")) return;
         gridId = nbt.getUniqueId("gridId");
-        System.out.println("Grid id: " + gridId);
+        //System.out.println("Grid id: " + gridId);
         super.read(state, nbt);
     }
 
@@ -174,14 +220,12 @@ public class TileEntityPipeFluid extends TileEntity implements ITickableTileEnti
         if(grid != null) return;
         if(gridId == null)
         {
-            System.out.println("NO ID!!!");
             createGrid();
             return;
         }
         ((HorizontalPipeGrid) MainClass.gridsManager.getGrid(gridId)).addPipe(this);
         if(grid == null)
         {
-            System.out.println("NO GRID!!!");
             createGrid();
         }
     }

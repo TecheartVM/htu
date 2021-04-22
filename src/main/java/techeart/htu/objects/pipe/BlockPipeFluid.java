@@ -16,12 +16,14 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.world.IWorld;
+import net.minecraft.world.IWorldReader;
 import net.minecraft.world.World;
 import net.minecraftforge.common.ToolType;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import techeart.htu.utils.HTUTileEntityType;
 import techeart.htu.utils.RegistryHandler;
+import techeart.htu.utils.Utils;
 
 import javax.annotation.Nullable;
 
@@ -91,8 +93,8 @@ public class BlockPipeFluid extends SixWayBlock implements ITileEntityProvider
         TileEntity tileEntity = worldIn.getTileEntity(pos);
         if(tileEntity != null && tileEntity.getType() == HTUTileEntityType.FLUID_PIPE.get())
         {
-            //if(!worldIn.isRemote) System.out.println("Fluid inside: " + ((TileEntityPipeFluid) tileEntity).getFluidInTank(0).getAmount());//TODO
-            if(!worldIn.isRemote) System.out.println("Fluid inside: " + ((TileEntityPipeFluid)tileEntity).getFluidInTank(0).getAmount());
+            if(!worldIn.isRemote) //System.out.println("Fluid inside: " + ((TileEntityPipeFluid)tileEntity).getFluidInTank(0).getAmount());
+                Utils.playerInfoMessage("Fluid inside: " + ((TileEntityPipeFluid)tileEntity).getFluidInTank(0).getAmount() + " mb", player);
         }
         return super.onBlockActivated(state, worldIn, pos, player, handIn, hit);
     }

@@ -145,7 +145,7 @@ public class MainClass
     public static void onServerTick(TickEvent.ServerTickEvent event)
     {
         //for (IPipeGrid grid : worldPipeGrids) { grid.tick(); }
-        gridsManager.tick();
+        gridsManager.onServerTick();
         //System.out.println("World grids count: " + worldPipeGrids.size());
     }
 
