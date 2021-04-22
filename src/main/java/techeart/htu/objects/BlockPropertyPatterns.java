@@ -17,7 +17,7 @@ public class BlockPropertyPatterns
                 .hardnessAndResistance(hardness, resistance);
     }
 
-    public static Block.Properties blockOre() { return blockMetal(1, 1.5f, 6.0f); }
+    public static Block.Properties blockOre() { return blockMetal(2, 1.5f, 6.0f); }
     public static Block.Properties blockOre(int harvestLevel) { return blockMetal(harvestLevel, 1.5f, 6.0f); }
     public static Block.Properties blockOre(int harvestLevel, float hardness, float resistance)
     {

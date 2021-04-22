@@ -1,16 +1,17 @@
 package techeart.htu.objects.tank;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.ITileEntityProvider;
-import net.minecraft.block.SoundType;
+import net.minecraft.block.*;
 import net.minecraft.block.material.Material;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.*;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
+import net.minecraft.util.math.shapes.ISelectionContext;
+import net.minecraft.util.math.shapes.VoxelShape;
+import net.minecraft.util.math.shapes.VoxelShapes;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
 import net.minecraftforge.common.ToolType;
@@ -18,13 +19,16 @@ import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler.FluidAction;
 import net.minecraftforge.fluids.capability.IFluidHandlerItem;
+import net.minecraftforge.fml.client.registry.ClientRegistry;
 import techeart.htu.objects.HTUBlock;
 import techeart.htu.utils.HTUTileEntityType;
+import techeart.htu.utils.RegistryHandler;
 import techeart.htu.utils.Utils;
 
 import javax.annotation.Nullable;
+import java.util.stream.Stream;
 
-public class BlockFluidTank extends HTUBlock implements ITileEntityProvider
+public class BlockFluidTank extends Block implements ITileEntityProvider
 {
     public BlockFluidTank()
     {
@@ -32,7 +36,34 @@ public class BlockFluidTank extends HTUBlock implements ITileEntityProvider
                 .harvestTool(ToolType.PICKAXE)
                 .hardnessAndResistance(4.0f, 7.0f)
                 .sound(SoundType.METAL)
+                .notSolid()
+                .setOpaque((state, reader, pos) -> false)
+                .setBlocksVision((state, reader, pos) -> false)
         );
+
+
+    }
+
+    @Override
+    public VoxelShape getShape(BlockState state, IBlockReader worldIn, BlockPos pos, ISelectionContext context)
+    {
+        return Block.makeCuboidShape(2,0 ,2, 14, 16, 14);
+    }
+
+    @Override
+    public boolean isSideInvisible(BlockState state, BlockState adjacentBlockState, Direction side)
+    {
+        return false;
+    }
+
+    @Override
+    public int getOpacity(BlockState state, IBlockReader worldIn, BlockPos pos) {
+        return 0;
+    }
+
+    public void registerCustomRenderer()
+    {
+        ClientRegistry.bindTileEntityRenderer(HTUTileEntityType.FLUID_TANK.get(), RendererFluidTank::new);
     }
 
     @Override

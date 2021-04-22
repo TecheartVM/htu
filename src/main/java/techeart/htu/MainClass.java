@@ -25,6 +25,7 @@ import org.apache.logging.log4j.Logger;
 import techeart.htu.objects.boiler.GuiSteamBoiler;
 import techeart.htu.objects.pipe.IPipeGrid;
 import techeart.htu.objects.smeltery.GuiSmeltery;
+import techeart.htu.objects.tank.BlockFluidTank;
 import techeart.htu.recipes.alloying.AlloyRecipes;
 import techeart.htu.utils.*;
 import techeart.htu.world.gen.OreGeneration;
@@ -74,6 +75,10 @@ public class MainClass
         //register gui containers
         ScreenManager.registerFactory(HTUContainerType.SMELTERY.get(), GuiSmeltery::new);
         ScreenManager.registerFactory(HTUContainerType.STEAM_BOILER.get(), GuiSteamBoiler::new);
+
+        //register custom renderers
+        ((BlockFluidTank)RegistryHandler.BLOCK_FLUID_TANK.get()).registerCustomRenderer();
+        RenderTypeLookup.setRenderLayer(RegistryHandler.BLOCK_FLUID_TANK.get(), RenderType.getTranslucent());
 
         //register fluid render types
         final Map<Fluid, RenderType> FLUID_RENDER_TYPES = Util.make(Maps.newHashMap(), (map) -> {

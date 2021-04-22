@@ -5,6 +5,7 @@ import techeart.htu.utils.interfaces.IHasModel;
 
 public class HTUBlock extends Block implements IHasModel
 {
+    @Deprecated
     public HTUBlock(Properties props)
     {
         super(props);
