@@ -1,13 +1,14 @@
 package techeart.htu.objects.tank;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.ITileEntityProvider;
-import net.minecraft.block.SoundType;
+import net.minecraft.block.*;
 import net.minecraft.block.material.Material;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.fluid.Fluid;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.loot.LootContext;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.*;
 import net.minecraft.util.math.BlockPos;
@@ -21,26 +22,52 @@ import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler.FluidAction;
 import net.minecraftforge.fluids.capability.IFluidHandlerItem;
+import net.minecraftforge.fluids.capability.templates.FluidTank;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 import techeart.htu.utils.HTUTileEntityType;
 import techeart.htu.utils.Utils;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
 
 public class BlockFluidTank extends Block implements ITileEntityProvider
 {
+    private TileEntityFluidTank tileEntity;
+
     public BlockFluidTank()
     {
         super(Block.Properties.create(Material.IRON)
                 .harvestTool(ToolType.PICKAXE)
+                .setRequiresTool()
                 .hardnessAndResistance(4.0f, 7.0f)
                 .sound(SoundType.METAL)
                 .notSolid()
                 .setOpaque((state, reader, pos) -> false)
                 .setBlocksVision((state, reader, pos) -> false)
         );
+    }
 
+    @Override
+    public List<ItemStack> getDrops(BlockState state, LootContext.Builder builder)
+    {
+        List<ItemStack> drop = new ArrayList<>();
+        ItemStack item = new ItemStack(this.getBlock().asItem(), 1);
+        drop.add(item);
+        if(tileEntity == null) return drop;
+        CompoundNBT data = item.getOrCreateTag();
+        tileEntity.write(data);
+        return drop;
+    }
 
+    @Override
+    public int getLightValue(BlockState state, IBlockReader world, BlockPos pos)
+    {
+        TileEntityFluidTank tankTile = ((TileEntityFluidTank)world.getTileEntity(pos));
+        if(tankTile == null) return 0;
+        FluidStack fluid = tankTile.getFluidInTank(0);
+        if(fluid.isEmpty()) return 0;
+        return Math.max(fluid.getFluid().getAttributes().getLuminosity(), super.getLightValue(state, world, pos));
     }
 
     @Override
@@ -138,7 +165,24 @@ public class BlockFluidTank extends Block implements ITileEntityProvider
         return ActionResultType.SUCCESS;
     }
 
+    @Override
+    public void onBlockPlacedBy(World worldIn, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack)
+    {
+        super.onBlockPlacedBy(worldIn, pos, state, placer, stack);
+        if(stack.getTag() != null && tileEntity != null)
+        {
+            FluidTank f = new FluidTank(TileEntityFluidTank.CAPACITY);
+            f.readFromNBT(stack.getTag());
+            tileEntity.fill(f.getFluid(), FluidAction.EXECUTE);
+        }
+    }
+
     @Nullable
     @Override
-    public TileEntity createNewTileEntity(IBlockReader worldIn) { return HTUTileEntityType.FLUID_TANK.get().create(); }
+    public TileEntity createNewTileEntity(IBlockReader worldIn)
+    {
+        TileEntity te = HTUTileEntityType.FLUID_TANK.get().create();
+        tileEntity = (TileEntityFluidTank) te;
+        return te;
+    }
 }

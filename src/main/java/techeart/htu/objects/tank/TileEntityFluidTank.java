@@ -32,6 +32,7 @@ public class TileEntityFluidTank extends TileEntity implements IFluidHandler
         {
             super.onContentsChanged();
             TileEntityFluidTank.this.syncClient();
+
         }
     };
 

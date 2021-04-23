@@ -1,6 +1,7 @@
 package techeart.htu;
 
 import com.google.common.collect.Maps;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ScreenManager;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.RenderTypeLookup;
@@ -13,6 +14,7 @@ import net.minecraftforge.client.event.RecipesUpdatedEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
@@ -25,11 +27,9 @@ import techeart.htu.objects.boiler.GuiSteamBoiler;
 import techeart.htu.objects.pipe.IPipeGrid;
 import techeart.htu.objects.smeltery.GuiSmeltery;
 import techeart.htu.objects.tank.BlockFluidTank;
+import techeart.htu.objects.tank.RendererFluidTank;
 import techeart.htu.recipes.alloying.AlloyRecipes;
-import techeart.htu.utils.FuelTemperatures;
-import techeart.htu.utils.HTUContainerType;
-import techeart.htu.utils.RegistryHandler;
-import techeart.htu.utils.WorldGridsManager;
+import techeart.htu.utils.*;
 import techeart.htu.world.gen.OreGeneration;
 
 import java.util.HashSet;
@@ -77,8 +77,9 @@ public class MainClass
         ScreenManager.registerFactory(HTUContainerType.STEAM_BOILER.get(), GuiSteamBoiler::new);
 
         //register custom renderers
-        ((BlockFluidTank)RegistryHandler.BLOCK_FLUID_TANK.get()).registerCustomRenderer();
+        //((BlockFluidTank)RegistryHandler.BLOCK_FLUID_TANK.get()).registerCustomRenderer();
         RenderTypeLookup.setRenderLayer(RegistryHandler.BLOCK_FLUID_TANK.get(), RenderType.getTranslucent());
+        ClientRegistry.bindTileEntityRenderer(HTUTileEntityType.FLUID_TANK.get(), RendererFluidTank::new);
 
         //register fluid render types
         final Map<Fluid, RenderType> FLUID_RENDER_TYPES = Util.make(Maps.newHashMap(), (map) -> {
