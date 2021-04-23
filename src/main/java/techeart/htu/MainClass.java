@@ -12,7 +12,6 @@ import net.minecraft.util.Util;
 import net.minecraftforge.client.event.RecipesUpdatedEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
@@ -27,7 +26,10 @@ import techeart.htu.objects.pipe.IPipeGrid;
 import techeart.htu.objects.smeltery.GuiSmeltery;
 import techeart.htu.objects.tank.BlockFluidTank;
 import techeart.htu.recipes.alloying.AlloyRecipes;
-import techeart.htu.utils.*;
+import techeart.htu.utils.FuelTemperatures;
+import techeart.htu.utils.HTUContainerType;
+import techeart.htu.utils.RegistryHandler;
+import techeart.htu.utils.WorldGridsManager;
 import techeart.htu.world.gen.OreGeneration;
 
 import java.util.HashSet;
@@ -46,7 +48,6 @@ public class MainClass
 
     public static final WorldGridsManager gridsManager = new WorldGridsManager();
 
-    //public static MainClass instance;
 
     //static { FluidRegistry.enableUniversalBucket(); }
 
@@ -65,7 +66,6 @@ public class MainClass
     private void setup(final FMLCommonSetupEvent event)
     {
         //Oregen
-        //MinecraftForge.EVENT_BUS.register(gridsManager);
         OreGeneration.setupOreGenerator();
     }
 
@@ -96,42 +96,21 @@ public class MainClass
         AlloyRecipes.init(event.getRecipeManager());
     }
 
-//    @SubscribeEvent
-//    public void onGatherData(GatherDataEvent event)
-//    {
-//        if(event.includeServer())
-//        {
-//            DataGenerator generator = event.getGenerator();
-////            generator.addProvider(new HTUFluidTagsProvider(generator));
-//        }
-//    }
-
     @SubscribeEvent
     public void onServerStarting(FMLServerStartingEvent event)
     {
         FuelTemperatures.init();
     }
-
     @SubscribeEvent
-    public void onWorldLoading(WorldEvent.Load event)
+    public void onServerStop(FMLServerStoppingEvent event)
     {
-        if(!event.getWorld().isRemote())
-        {
-            //gridsManager.loadOrCreate();
-        }
+        gridsManager.reset();
     }
-
-    // You can use EventBusSubscriber to automatically subscribe events on the contained class (this is subscribing to the MOD
-    // Event bus for receiving Registry Events)
-//    @Mod.EventBusSubscriber(bus=Mod.EventBusSubscriber.Bus.MOD)
-//    public static class RegistryEvents
-//    {
-//        @SubscribeEvent
-//        public static void onBlocksRegistry(final RegistryEvent.Register<Block> blockRegistryEvent)
-//        {
-//            // register a new block here
-//        }
-//    }
+    @SubscribeEvent
+    public void onWorldTick(FMLServerStartingEvent event)
+    {
+        gridsManager.onServerWorldTick(event.getServer().func_241755_D_());
+    }
 
     public static final ItemGroup CREATIVE_TAB = new ItemGroup("htu_creative_tab")
     {

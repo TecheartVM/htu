@@ -14,17 +14,16 @@ import java.util.Set;
 public class NBTHandler extends WorldSavedData
 {
     private static final String DATA_IDENTIFIER = MainClass.MODID + "_nbt";
-
     public final Set<ISaveable> subscribers = new HashSet();
 
     public NBTHandler() { this(DATA_IDENTIFIER); }
     public NBTHandler(String name) { super(name); }
 
-    public static NBTHandler get(World world)
+    public NBTHandler get(World world)
     {
         if(!(world instanceof ServerWorld)) throw new RuntimeException("Attempted to get data from client.");
         DimensionSavedDataManager storage = ServerLifecycleHooks.getCurrentServer().func_241755_D_().getWorld().getSavedData();
-        //DimensionSavedDataManager storage = ((ServerWorld)world).getSavedData();
+        MainClass.LOGGER.info("HANDLER GET");
         return storage.getOrCreate(NBTHandler::new, DATA_IDENTIFIER);
     }
 
@@ -43,15 +42,13 @@ public class NBTHandler extends WorldSavedData
     @Override
     public void read(CompoundNBT nbt)
     {
-        System.out.println("Reading...");
-        //subscribers.forEach(item -> item.readFromNBT(nbt));
+        MainClass.LOGGER.info("HANDLER READ");
     }
 
     @Override
     public CompoundNBT write(CompoundNBT nbt)
     {
-        System.out.println("Writing...");
-        //subscribers.forEach(item -> item.writeToNBT(nbt));
+        MainClass.LOGGER.info("HANDLER WRITE");
         return nbt;
     }
 }

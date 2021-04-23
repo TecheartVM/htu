@@ -1,17 +1,19 @@
 package techeart.htu.objects.tank;
 
-import net.minecraft.block.*;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.ITileEntityProvider;
+import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.*;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.math.shapes.ISelectionContext;
 import net.minecraft.util.math.shapes.VoxelShape;
-import net.minecraft.util.math.shapes.VoxelShapes;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
 import net.minecraftforge.common.ToolType;
@@ -20,13 +22,10 @@ import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler.FluidAction;
 import net.minecraftforge.fluids.capability.IFluidHandlerItem;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
-import techeart.htu.objects.HTUBlock;
 import techeart.htu.utils.HTUTileEntityType;
-import techeart.htu.utils.RegistryHandler;
 import techeart.htu.utils.Utils;
 
 import javax.annotation.Nullable;
-import java.util.stream.Stream;
 
 public class BlockFluidTank extends Block implements ITileEntityProvider
 {
@@ -87,6 +86,11 @@ public class BlockFluidTank extends Block implements ITileEntityProvider
                 return ActionResultType.SUCCESS;
             }
 
+            /*~~~~~ACHIEVEMENT~~~~~*/
+            if(heldItem.getItem() == Items.PUFFERFISH_BUCKET ||heldItem.getItem() == Items.COD_BUCKET || heldItem.getItem() == Items.SALMON_BUCKET|| heldItem.getItem() == Items.TROPICAL_FISH_BUCKET )
+                Utils.unlockAdvancement(player,"secret/wip");
+            /*~~~~~ACHIEVEMENT~~~~~*/
+
             IFluidHandlerItem itemFluidHandler = new ItemStack(heldItem.getItem(),1).getCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY).orElse(null);
 
             if (itemFluidHandler != null)
@@ -101,7 +105,7 @@ public class BlockFluidTank extends Block implements ITileEntityProvider
                 else
                     fluidInItem = itemFluidHandler.drain(new FluidStack(tankTile.getFluidInTank(0), tankTile.getTankCapacity(0) - tankTile.getFluidInTank(0).getAmount()), FluidAction.SIMULATE);
 
-                            //All systems operable. Lets rock!
+                //All systems operable. Lets rock!
                 if(fluidInItem.isEmpty())
                 {
                     //if draining with max value of integer isn't empty, this means that the item cannot be partially emptied (like vanilla bucket).

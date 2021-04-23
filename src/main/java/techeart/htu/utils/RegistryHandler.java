@@ -1,20 +1,21 @@
 package techeart.htu.utils;
 
+import net.minecraft.block.Block;
 import net.minecraft.block.FlowingFluidBlock;
 import net.minecraft.block.material.Material;
 import net.minecraft.fluid.Fluid;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipeSerializer;
 import net.minecraft.item.crafting.IRecipeType;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.registry.Registry;
 import net.minecraftforge.event.RegistryEvent;
-import techeart.htu.MainClass;
-import net.minecraft.block.Block;
-import net.minecraft.item.Item;
 import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.DeferredRegister;
+import net.minecraftforge.registries.ForgeRegistries;
+import techeart.htu.MainClass;
 import techeart.htu.objects.*;
 import techeart.htu.objects.boiler.BlockSteamBoiler;
 import techeart.htu.objects.boiler.BlockSteamBoilerTop;
@@ -103,6 +104,8 @@ public class RegistryHandler
         Registry.register(Registry.RECIPE_TYPE, new ResourceLocation(RECIPE_TYPE_ALLOYING.toString()), RECIPE_TYPE_ALLOYING);
         event.getRegistry().register(AlloyRecipe.SERIALIZER);
     }
+
+    public static final RegistryObject<Item> ICON_SMORC = ITEMS.register("icon_smorc",HTUIconItem::new);
 
 //    @SubscribeEvent
 //    public static void onBlockRegister(RegistryEvent.Register<Block> event)

@@ -215,15 +215,14 @@ public class TileEntityPipeFluid extends TileEntity implements ITickableTileEnti
     @Override
     public void tick()
     {
-        if(world.isRemote) return;
-        if(!MainClass.gridsManager.isLoaded()) return;
-        if(grid != null) return;
+        if(world.isRemote || !MainClass.gridsManager.isLoaded()|| grid != null) return;
+
         if(gridId == null)
         {
             createGrid();
             return;
         }
-        ((HorizontalPipeGrid) MainClass.gridsManager.getGrid(gridId)).addPipe(this);
+        MainClass.gridsManager.getGrid(gridId).addPipe(this);
         if(grid == null)
         {
             createGrid();
