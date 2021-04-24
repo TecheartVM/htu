@@ -39,12 +39,12 @@ public class RendererFluidTank extends TileEntityRenderer<TileEntityFluidTank>
     protected void renderFluid(IBlockDisplayReader world, BlockPos pos, Fluid fluid, float percent, MatrixStack matrix, IRenderTypeBuffer buffer)
     {
         matrix.push();
-        matrix.translate(0.5d, 0.5d, 0.5d);
+        matrix.translate(.5, .5, .5);
         Matrix4f matrixLast = matrix.getLast().getMatrix();
         Matrix3f normalMatrix = matrix.getLast().getNormal();
         int color = fluid.getAttributes().getColor(world, pos);
         TextureAtlasSprite fluidSprite = getFluidSprite(fluid);
-        IVertexBuilder builder = buffer.getBuffer(RenderType.getText(fluidSprite.getAtlasTexture().getTextureLocation()));
+        IVertexBuilder builder = buffer.getBuffer(RenderType.getTranslucent());
         for (int i = 0; i < 4; i++)
         {
             renderFluidSide(fluidSprite, matrixLast, normalMatrix, builder, color, percent);

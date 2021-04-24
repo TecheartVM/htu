@@ -83,13 +83,9 @@ public class BlockFluidTank extends Block implements ITileEntityProvider
     }
 
     @Override
-    public int getOpacity(BlockState state, IBlockReader worldIn, BlockPos pos) {
-        return 0;
-    }
-
-    public void registerCustomRenderer()
+    public int getOpacity(BlockState state, IBlockReader worldIn, BlockPos pos)
     {
-        ClientRegistry.bindTileEntityRenderer(HTUTileEntityType.FLUID_TANK.get(), RendererFluidTank::new);
+        return 0;
     }
 
     @Override

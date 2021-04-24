@@ -77,8 +77,7 @@ public class MainClass
         ScreenManager.registerFactory(HTUContainerType.STEAM_BOILER.get(), GuiSteamBoiler::new);
 
         //register custom renderers
-        //((BlockFluidTank)RegistryHandler.BLOCK_FLUID_TANK.get()).registerCustomRenderer();
-        RenderTypeLookup.setRenderLayer(RegistryHandler.BLOCK_FLUID_TANK.get(), RenderType.getTranslucent());
+        RenderTypeLookup.setRenderLayer(RegistryHandler.BLOCK_FLUID_TANK.get(), RenderType.getCutout());
         ClientRegistry.bindTileEntityRenderer(HTUTileEntityType.FLUID_TANK.get(), RendererFluidTank::new);
 
         //register fluid render types
