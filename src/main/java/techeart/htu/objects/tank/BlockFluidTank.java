@@ -2,9 +2,9 @@ package techeart.htu.objects.tank;
 
 import net.minecraft.block.*;
 import net.minecraft.block.material.Material;
+import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.fluid.Fluid;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.loot.LootContext;
@@ -23,7 +23,7 @@ import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler.FluidAction;
 import net.minecraftforge.fluids.capability.IFluidHandlerItem;
 import net.minecraftforge.fluids.capability.templates.FluidTank;
-import net.minecraftforge.fml.client.registry.ClientRegistry;
+import techeart.htu.objects.HTUBlock;
 import techeart.htu.utils.HTUTileEntityType;
 import techeart.htu.utils.Utils;
 
@@ -31,7 +31,7 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BlockFluidTank extends Block implements ITileEntityProvider
+public class BlockFluidTank extends HTUBlock implements ITileEntityProvider
 {
     private TileEntityFluidTank tileEntity;
 
@@ -63,9 +63,11 @@ public class BlockFluidTank extends Block implements ITileEntityProvider
     @Override
     public int getLightValue(BlockState state, IBlockReader world, BlockPos pos)
     {
-        TileEntityFluidTank tankTile = ((TileEntityFluidTank)world.getTileEntity(pos));
+        TileEntity te = world.getTileEntity(pos);
+        if(!(te instanceof TileEntityFluidTank)) return 0;
+        TileEntityFluidTank tankTile = ((TileEntityFluidTank)te);
         if(tankTile == null) return 0;
-        FluidStack fluid = tankTile.getFluidInTank(0);
+        FluidStack fluid = tankTile.getFluid();
         if(fluid.isEmpty()) return 0;
         return Math.max(fluid.getFluid().getAttributes().getLuminosity(), super.getLightValue(state, world, pos));
     }
@@ -74,18 +76,6 @@ public class BlockFluidTank extends Block implements ITileEntityProvider
     public VoxelShape getShape(BlockState state, IBlockReader worldIn, BlockPos pos, ISelectionContext context)
     {
         return Block.makeCuboidShape(2,0 ,2, 14, 16, 14);
-    }
-
-    @Override
-    public boolean isSideInvisible(BlockState state, BlockState adjacentBlockState, Direction side)
-    {
-        return false;
-    }
-
-    @Override
-    public int getOpacity(BlockState state, IBlockReader worldIn, BlockPos pos)
-    {
-        return 0;
     }
 
     @Override
@@ -105,7 +95,7 @@ public class BlockFluidTank extends Block implements ITileEntityProvider
             ItemStack heldItem = player.getHeldItem(handIn);
             if (heldItem.isEmpty())
             {
-                Utils.playerInfoMessage("Fluid in tank: " + tankTile.getFluidInTank(0).getAmount()+"mb",player);
+                Utils.playerInfoMessage("Fluid in tank: " + tankTile.getFluid().getAmount()+"mB",player);
                 return ActionResultType.SUCCESS;
             }
 
@@ -123,42 +113,72 @@ public class BlockFluidTank extends Block implements ITileEntityProvider
                 FluidStack fluidInItem;
 
                 //if tank is empty, trying to determine fluid in item stack. Else check amount of the required fluid.
-                if(tankTile.getFluidInTank(0).isEmpty())
-                    fluidInItem = itemFluidHandler.drain(tankTile.getTankCapacity(0), FluidAction.SIMULATE);
+                if(tankTile.isEmpty())
+                    fluidInItem = itemFluidHandler.drain(tankTile.getCapacity(), FluidAction.SIMULATE);
                 else
-                    fluidInItem = itemFluidHandler.drain(new FluidStack(tankTile.getFluidInTank(0), tankTile.getTankCapacity(0) - tankTile.getFluidInTank(0).getAmount()), FluidAction.SIMULATE);
+                    fluidInItem = itemFluidHandler.drain(new FluidStack(tankTile.getFluid(), tankTile.getCapacity() - tankTile.getFluid().getAmount()), FluidAction.SIMULATE);
 
                 //All systems operable. Lets rock!
                 if(fluidInItem.isEmpty())
                 {
                     //if draining with max value of integer isn't empty, this means that the item cannot be partially emptied (like vanilla bucket).
-                    if(!itemFluidHandler.drain(new FluidStack(tankTile.getFluidInTank(0), Integer.MAX_VALUE), FluidAction.SIMULATE).isEmpty())
+                    if(!itemFluidHandler.drain(new FluidStack(tankTile.getFluid(), Integer.MAX_VALUE), FluidAction.SIMULATE).isEmpty())
                         return ActionResultType.SUCCESS;
 
                     //Ok, this item doesn't have any fluid (fill item + drain tank)
 
                     //check if we can fill item with tank fluid
-                    int filled = itemFluidHandler.fill(tankTile.getFluidInTank(0), player.isCreative() ? FluidAction.SIMULATE : FluidAction.EXECUTE);
+                    int filled = itemFluidHandler.fill(tankTile.getFluid(), player.isCreative() ? FluidAction.SIMULATE : FluidAction.EXECUTE);
                     //if can't, do nothing
                     if(filled <= 0) return ActionResultType.SUCCESS;
                     //if can, drain tank and fill item with drained fluid (and save soundEvent ;) )
-                    sound = tankTile.drain(new FluidStack(tankTile.getFluidInTank(0), filled), FluidAction.EXECUTE).getFluid().getAttributes().getFillSound();
+                    sound = tankTile.drain(new FluidStack(tankTile.getFluid(), filled), FluidAction.EXECUTE).getFluid().getAttributes().getFillSound();
 
                     Utils.addItemToPlayer(player,handIn,1,new ItemStack(itemFluidHandler.getContainer().getItem(), 1));
+
+                    //if tank became empty, the light must be updated
+                    if(tankTile.isEmpty())
+                    {
+                        world.getChunkProvider().getLightManager().checkBlock(pos);
+                        world.addBlockEvent(pos, this, 1, 1);
+                    }
                 }
                 else
                 {
+                    boolean wasEmpty = tankTile.isEmpty();
+
                     //It seems like this item have suitable fluid... Lets fill tank! (fill tank + drain item)
                     int filled = tankTile.fill(fluidInItem, FluidAction.EXECUTE);
                     sound  = itemFluidHandler.drain(new FluidStack(fluidInItem, filled), player.isCreative() ? FluidAction.SIMULATE : FluidAction.EXECUTE)
                             .getFluid().getAttributes().getEmptySound();
+
                     Utils.addItemToPlayer(player,handIn,1,new ItemStack(itemFluidHandler.getContainer().getItem(), 1));
+
+                    //if tank got new fluid, the light must be updated
+                    if(wasEmpty && !tankTile.isEmpty())
+                    {
+                        world.getChunkProvider().getLightManager().checkBlock(pos);
+                        world.addBlockEvent(pos, this, 1, 1);
+                    }
                 }
                 world.playSound(null, pos,sound, SoundCategory.BLOCKS, 1.0F, 1.0F);
                 return ActionResultType.SUCCESS;
             }
         }
         return ActionResultType.SUCCESS;
+    }
+
+    @Override
+    public boolean eventReceived(BlockState state, World worldIn, BlockPos pos, int id, int param)
+    {
+        if(id == 1)
+        {
+            //updates client light
+            if(worldIn.isRemote)
+                ((ClientWorld)worldIn).getChunkProvider().getLightManager().checkBlock(pos);
+            return true;
+        }
+        return super.eventReceived(state, worldIn, pos, id, param);
     }
 
     @Override

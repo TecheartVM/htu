@@ -28,11 +28,11 @@ public class RendererFluidTank extends TileEntityRenderer<TileEntityFluidTank>
     @Override
     public void render(TileEntityFluidTank tileEntity, float partialTicks, MatrixStack matrixStackIn, IRenderTypeBuffer bufferIn, int combinedLightIn, int combinedOverlayIn)
     {
-        FluidStack fluid = tileEntity.getFluidInTank(0);
+        FluidStack fluid = tileEntity.getFluid();
         if(!fluid.isEmpty())
         {
-            int capacity = tileEntity.getTankCapacity(0);
-            renderFluid(tileEntity.getWorld(), tileEntity.getPos(), fluid.getFluid(), fluid.getAmount() / (float) capacity, matrixStackIn, bufferIn);
+            int capacity = tileEntity.getCapacity();
+            renderFluid(tileEntity.getWorld(), tileEntity.getPos(), fluid.getFluid(), tileEntity.getLerpedFluidAmount() / (float) capacity, matrixStackIn, bufferIn);
         }
     }
 
@@ -51,7 +51,7 @@ public class RendererFluidTank extends TileEntityRenderer<TileEntityFluidTank>
             matrix.rotate(Vector3f.YP.rotationDegrees(90f));
         }
 
-        if(percent < 1.0f) renderFluidTop(fluidSprite, matrixLast, normalMatrix, builder, color, percent);
+        if(percent < 0.999f) renderFluidTop(fluidSprite, matrixLast, normalMatrix, builder, color, percent);
         matrix.pop();
     }
 
