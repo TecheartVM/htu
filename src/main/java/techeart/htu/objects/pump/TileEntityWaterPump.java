@@ -122,14 +122,11 @@ public class TileEntityWaterPump extends TileEntity implements ITickableTileEnti
     {
         if (capability == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY)
         {
-            if(facing == Direction.UP)
-            {
-                return (LazyOptional<T>) fluidCapWater;
-            }
-            else if(facing != Direction.DOWN)
-            {
+            Direction pumpFace = BlockWaterPump.getFacing(getBlockState());
+            if(facing == pumpFace.rotateY())
                 return (LazyOptional<T>) fluidCapSteam;
-            }
+            if(facing == pumpFace.rotateYCCW())
+                return (LazyOptional<T>) fluidCapWater;
         }
         return super.getCapability(capability, facing);
     }
