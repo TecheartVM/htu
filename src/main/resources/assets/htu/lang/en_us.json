@@ -1,5 +1,6 @@
 {
-  "itemGroup.htu_creative_tab": "High Tech Universe",
+  "itemGroup.htu.steam_creative_tab": "HTU Steam age",
+  "itemGroup.htu.primal_creative_tab": "HTU Primal age",
 
   "item.htu.ingot_copper": "Copper Ingot",
   "item.htu.ingot_tin": "Tin Ingot",
@@ -36,5 +37,8 @@
   "advancements.htu.stone_age.furnace.desc": "Lets start from..start...",
 
   "advancements.htu.secret.wip.title": "To early ;)",
-  "advancements.htu.secret.wip.desc": "Faster then devs!"
+  "advancements.htu.secret.wip.desc": "Faster then devs!",
+
+  "htu.moreinfo.tooltip": "Hold\u00A7e Shift\u00A77  for more information",
+  "htu.fluidtank.tooltip": "This tank can store only fluids"
 }

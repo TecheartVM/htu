@@ -1,7 +1,11 @@
 package techeart.htu.objects.tank;
 
-import net.minecraft.block.*;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.ITileEntityProvider;
+import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
+import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -10,13 +14,19 @@ import net.minecraft.item.Items;
 import net.minecraft.loot.LootContext;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.*;
+import net.minecraft.util.ActionResultType;
+import net.minecraft.util.Hand;
+import net.minecraft.util.SoundCategory;
+import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.math.shapes.ISelectionContext;
 import net.minecraft.util.math.shapes.VoxelShape;
+import net.minecraft.util.text.*;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.ToolType;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
@@ -25,7 +35,8 @@ import net.minecraftforge.fluids.capability.IFluidHandlerItem;
 import net.minecraftforge.fluids.capability.templates.FluidTank;
 import techeart.htu.objects.HTUBlock;
 import techeart.htu.utils.HTUTileEntityType;
-import techeart.htu.utils.Utils;
+import techeart.htu.utils.KeyboardHelper;
+import techeart.htu.utils.ModUtils;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -58,6 +69,22 @@ public class BlockFluidTank extends HTUBlock implements ITileEntityProvider
         CompoundNBT data = item.getOrCreateTag();
         tileEntity.write(data);
         return drop;
+    }
+
+    @Override
+    @OnlyIn(Dist.CLIENT)
+    public void addInformation(ItemStack stack, @Nullable IBlockReader worldIn, List<ITextComponent> tooltip, ITooltipFlag flagIn) {
+        CompoundNBT data = stack.getTag();
+
+        if(KeyboardHelper.isHoldingShift())
+            if (data != null)
+                tooltip.add(new StringTextComponent("Fluid: ").append(new TranslationTextComponent(ModUtils.getFluidName(data)).setStyle(Style.EMPTY.setColor(Color.fromHex("#0000ff")))).append(new StringTextComponent(", "+data.getInt("Amount") + "mB")).setStyle(Style.EMPTY.setItalic(true)));
+            else
+                tooltip.add(new TranslationTextComponent("htu.fluidtank.tooltip"));
+        else
+            tooltip.add(new TranslationTextComponent("htu.moreinfo.tooltip"));
+
+        super.addInformation(stack, worldIn, tooltip, flagIn);
     }
 
     @Override
@@ -95,13 +122,13 @@ public class BlockFluidTank extends HTUBlock implements ITileEntityProvider
             ItemStack heldItem = player.getHeldItem(handIn);
             if (heldItem.isEmpty())
             {
-                Utils.playerInfoMessage("Fluid in tank: " + tankTile.getFluid().getAmount()+"mB",player);
+                ModUtils.playerInfoMessage("Fluid in tank: " + tankTile.getFluid().getAmount()+"mB",player);
                 return ActionResultType.SUCCESS;
             }
 
             /*~~~~~ACHIEVEMENT~~~~~*/
             if(heldItem.getItem() == Items.PUFFERFISH_BUCKET ||heldItem.getItem() == Items.COD_BUCKET || heldItem.getItem() == Items.SALMON_BUCKET|| heldItem.getItem() == Items.TROPICAL_FISH_BUCKET )
-                Utils.unlockAdvancement(player,"secret/wip");
+                ModUtils.unlockAdvancement(player,"secret/wip");
             /*~~~~~ACHIEVEMENT~~~~~*/
 
             IFluidHandlerItem itemFluidHandler = new ItemStack(heldItem.getItem(),1).getCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY).orElse(null);
@@ -134,7 +161,7 @@ public class BlockFluidTank extends HTUBlock implements ITileEntityProvider
                     //if can, drain tank and fill item with drained fluid (and save soundEvent ;) )
                     sound = tankTile.drain(new FluidStack(tankTile.getFluid(), filled), FluidAction.EXECUTE).getFluid().getAttributes().getFillSound();
 
-                    Utils.addItemToPlayer(player,handIn,1,new ItemStack(itemFluidHandler.getContainer().getItem(), 1));
+                    ModUtils.addItemToPlayer(player,handIn,1,new ItemStack(itemFluidHandler.getContainer().getItem(), 1));
 
                     //if tank became empty, the light must be updated
                     if(tankTile.isEmpty())
@@ -152,7 +179,7 @@ public class BlockFluidTank extends HTUBlock implements ITileEntityProvider
                     sound  = itemFluidHandler.drain(new FluidStack(fluidInItem, filled), player.isCreative() ? FluidAction.SIMULATE : FluidAction.EXECUTE)
                             .getFluid().getAttributes().getEmptySound();
 
-                    Utils.addItemToPlayer(player,handIn,1,new ItemStack(itemFluidHandler.getContainer().getItem(), 1));
+                    ModUtils.addItemToPlayer(player,handIn,1,new ItemStack(itemFluidHandler.getContainer().getItem(), 1));
 
                     //if tank got new fluid, the light must be updated
                     if(wasEmpty && !tankTile.isEmpty())

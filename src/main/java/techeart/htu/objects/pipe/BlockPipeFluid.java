@@ -21,8 +21,8 @@ import net.minecraftforge.common.ToolType;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import techeart.htu.utils.HTUTileEntityType;
+import techeart.htu.utils.ModUtils;
 import techeart.htu.utils.RegistryHandler;
-import techeart.htu.utils.Utils;
 
 import javax.annotation.Nullable;
 
@@ -93,7 +93,7 @@ public class BlockPipeFluid extends SixWayBlock implements ITileEntityProvider
         if(tileEntity != null && tileEntity.getType() == HTUTileEntityType.FLUID_PIPE.get())
         {
             if(!worldIn.isRemote) //System.out.println("Fluid inside: " + ((TileEntityPipeFluid)tileEntity).getFluidInTank(0).getAmount());
-                Utils.playerInfoMessage("Fluid inside: " + ((TileEntityPipeFluid)tileEntity).getFluidInTank(0).getAmount() + " mb", player);
+                ModUtils.playerInfoMessage("Fluid inside: " + ((TileEntityPipeFluid)tileEntity).getFluidInTank(0).getAmount() + " mb", player);
         }
         return super.onBlockActivated(state, worldIn, pos, player, handIn, hit);
     }

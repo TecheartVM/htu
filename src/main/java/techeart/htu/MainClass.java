@@ -1,7 +1,6 @@
 package techeart.htu;
 
 import com.google.common.collect.Maps;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ScreenManager;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.RenderTypeLookup;
@@ -26,7 +25,6 @@ import org.apache.logging.log4j.Logger;
 import techeart.htu.objects.boiler.GuiSteamBoiler;
 import techeart.htu.objects.pipe.IPipeGrid;
 import techeart.htu.objects.smeltery.GuiSmeltery;
-import techeart.htu.objects.tank.BlockFluidTank;
 import techeart.htu.objects.tank.RendererFluidTank;
 import techeart.htu.recipes.alloying.AlloyRecipes;
 import techeart.htu.utils.*;
@@ -36,7 +34,22 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-// The value here should match an entry in the META-INF/mods.toml file
+/* GLOBAL TODO LIST:
+* 1. FISH!
+* 2. Remake GRID System (+pipes)
+* 3. Create Gas (+Spreading algorithm)
+* 4. Clean up code
+* 5. Boiler:
+* 5.1 GUI + TankDrawingMethod
+* 5.2 TileEntity + Container perepisatNahuy!
+* 6. Fix furnace (everlasting burning)
+* 7. Pump animation + InputOutput system
+* 8. Smeltery (Fully rewrite)
+* 9. Tank (Rotating system + lock + output)
+* 10. Base classes
+* 11. Temperature system(s?)
+* 12. Universal bucket
+* */
 @Mod("htu")
 @Mod.EventBusSubscriber
 public class MainClass
@@ -48,9 +61,6 @@ public class MainClass
 
     public static final WorldGridsManager gridsManager = new WorldGridsManager();
 
-
-    //static { FluidRegistry.enableUniversalBucket(); }
-
     public MainClass()
     {
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
@@ -59,19 +69,16 @@ public class MainClass
 
         RegistryHandler.init();
 
-        // Register ourselves for server and other game events we are interested in
         MinecraftForge.EVENT_BUS.register(this);
     }
 
     private void setup(final FMLCommonSetupEvent event)
     {
-        //Oregen
         OreGeneration.setupOreGenerator();
     }
 
     private void setupClient(final FMLClientSetupEvent event)
     {
-        // do something that can only be done on the client
         //register gui containers
         ScreenManager.registerFactory(HTUContainerType.SMELTERY.get(), GuiSmeltery::new);
         ScreenManager.registerFactory(HTUContainerType.STEAM_BOILER.get(), GuiSteamBoiler::new);
@@ -92,7 +99,6 @@ public class MainClass
     @SubscribeEvent
     public void onRecipesUpdates(RecipesUpdatedEvent event)
     {
-        //System.out.println("Updating recipes...");
         AlloyRecipes.init(event.getRecipeManager());
     }
 
@@ -112,7 +118,7 @@ public class MainClass
         gridsManager.onServerWorldTick(event.getServer().func_241755_D_());
     }
 
-    public static final ItemGroup CREATIVE_TAB = new ItemGroup("htu_creative_tab")
+    public static final ItemGroup STEAM_CREATIVE_TAB = new ItemGroup("htu.steam_creative_tab")
     {
         @Override
         public ItemStack createIcon()
@@ -121,22 +127,21 @@ public class MainClass
         }
     };
 
+    public static final ItemGroup PRIMAL_CREATIVE_TAB = new ItemGroup("htu.primal_creative_tab")
+    {
+        @Override
+        public ItemStack createIcon()
+        {
+            return new ItemStack(RegistryHandler.BLOCK_PRIMITIVE_FURNACE.get());
+        }
+    };
+
     private static final Set<IPipeGrid> worldPipeGrids = new HashSet<>();
-    public static boolean registerPipeGrid(IPipeGrid grid) { return worldPipeGrids.add(grid); }
-    public static boolean unregisterPipeGrid(IPipeGrid grid) { return worldPipeGrids.remove(grid); }
 
     @SubscribeEvent
     public static void onServerTick(TickEvent.ServerTickEvent event)
     {
-        //for (IPipeGrid grid : worldPipeGrids) { grid.tick(); }
         gridsManager.onServerTick();
-        //System.out.println("World grids count: " + worldPipeGrids.size());
-    }
-
-    @SubscribeEvent
-    public static void onClientTick(TickEvent.ClientTickEvent event)
-    {
-        //for (IPipeGrid grid : worldPipeGrids) { grid.tick(); }
     }
 
     @SubscribeEvent
@@ -153,6 +158,14 @@ public class MainClass
     {
         gridsManager.reset();
     }
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~DebugZone~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
+//    public static boolean registerPipeGrid(IPipeGrid grid) { return worldPipeGrids.add(grid); }
+//    public static boolean unregisterPipeGrid(IPipeGrid grid) { return worldPipeGrids.remove(grid); }
+
+
+
+
 
 //    @SubscribeEvent
 //    public static void onPlayerTick(TickEvent.PlayerTickEvent event)

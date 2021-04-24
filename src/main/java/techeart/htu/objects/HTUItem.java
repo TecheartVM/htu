@@ -2,7 +2,6 @@ package techeart.htu.objects;
 
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
-import org.lwjgl.system.CallbackI;
 import techeart.htu.MainClass;
 import techeart.htu.utils.interfaces.IHasModel;
 
@@ -14,7 +13,7 @@ public class HTUItem extends Item implements IHasModel
     }
 
     public HTUItem() {
-        super(new Properties().group(MainClass.CREATIVE_TAB));
+        super(new Properties().group(MainClass.STEAM_CREATIVE_TAB));
     }
 
     public HTUItem(Properties props)

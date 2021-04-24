@@ -34,7 +34,6 @@ import net.minecraftforge.registries.ForgeRegistries;
 import techeart.htu.objects.HTUBlock;
 import techeart.htu.utils.HTUTileEntityType;
 import techeart.htu.utils.RegistryHandler;
-import techeart.htu.utils.Utils;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;

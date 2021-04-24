@@ -14,6 +14,6 @@ public class HTUItemBlock extends BlockItem
     }
 
     public HTUItemBlock(Block blockIn) {
-        super(blockIn, new Item.Properties().group(MainClass.CREATIVE_TAB));
+        super(blockIn, new Item.Properties().group(MainClass.STEAM_CREATIVE_TAB));
     }
 }

@@ -6,15 +6,17 @@ import net.minecraft.advancements.PlayerAdvancements;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.Hand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.server.ServerWorld;
+import net.minecraftforge.fluids.FluidStack;
 import techeart.htu.MainClass;
 
 import java.util.UUID;
 
-public class Utils
+public class ModUtils
 {
     public static void playerChatMessage(String info, PlayerEntity playerEntity)
     {
@@ -57,7 +59,11 @@ public class Utils
                 advancements.grantCriterion(advancement, "code_trigger");
         }
     }
-
+    //TODO: make this thing possible to get gasName
+    public static String getFluidName(CompoundNBT data)
+    {
+        return FluidStack.loadFluidStackFromNBT(data).getTranslationKey();
+    }
     public static ResourceLocation getResourceByKey(String path) {
         return new ResourceLocation(MainClass.MODID, path);
     }
