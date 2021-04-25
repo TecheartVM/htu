@@ -18,8 +18,8 @@ import net.minecraft.util.math.shapes.VoxelShapes;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
 import net.minecraftforge.common.ToolType;
-import techeart.htu.objects.HTUBlock;
 import techeart.htu.utils.HTUTileEntityType;
+import techeart.htu.utils.registration.HTUBlock;
 
 import javax.annotation.Nullable;
 import java.util.Map;

@@ -33,10 +33,10 @@ import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler.FluidAction;
 import net.minecraftforge.fluids.capability.IFluidHandlerItem;
 import net.minecraftforge.fluids.capability.templates.FluidTank;
-import techeart.htu.objects.HTUBlock;
 import techeart.htu.utils.HTUTileEntityType;
 import techeart.htu.utils.KeyboardHelper;
 import techeart.htu.utils.ModUtils;
+import techeart.htu.utils.registration.HTUBlock;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;

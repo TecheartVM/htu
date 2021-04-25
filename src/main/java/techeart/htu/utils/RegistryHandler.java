@@ -15,7 +15,8 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import techeart.htu.MainClass;
-import techeart.htu.objects.*;
+import techeart.htu.objects.BlockPropertyPatterns;
+import techeart.htu.objects.HTUIconItem;
 import techeart.htu.objects.boiler.BlockSteamBoiler;
 import techeart.htu.objects.boiler.BlockSteamBoilerTop;
 import techeart.htu.objects.fluids.FluidSteam;
@@ -26,6 +27,8 @@ import techeart.htu.objects.smeltery.BlockSmeltery;
 import techeart.htu.objects.tank.BlockFluidTank;
 import techeart.htu.recipes.alloying.AlloyRecipe;
 import techeart.htu.recipes.alloying.RecipeTypeAlloying;
+import techeart.htu.utils.registration.HTUBlock;
+import techeart.htu.utils.registration.HTUItem;
 
 public class RegistryHandler
 {
@@ -42,55 +45,56 @@ public class RegistryHandler
         HTUTileEntityType.TILEENTITY_TYPES.register(FMLJavaModLoadingContext.get().getModEventBus());
     }
 
+
     //items
-    public static final RegistryObject<Item> INGOT_COPPER = ITEMS.register("ingot_copper", () -> new HTUItem(MainClass.STEAM_CREATIVE_TAB));
-    public static final RegistryObject<Item> INGOT_TIN = ITEMS.register("ingot_tin", () -> new HTUItem(MainClass.STEAM_CREATIVE_TAB));
-    public static final RegistryObject<Item> INGOT_BRONZE = ITEMS.register("ingot_bronze", () -> new HTUItem(MainClass.STEAM_CREATIVE_TAB));
+    public static final RegistryObject<Item> INGOT_COPPER = ITEMS.register("ingot_copper", () -> new HTUItem.Builder().itemGroup(MainClass.STEAM_CREATIVE_TAB).build());
+    public static final RegistryObject<Item> INGOT_TIN = ITEMS.register("ingot_tin", () -> new HTUItem.Builder().itemGroup(MainClass.STEAM_CREATIVE_TAB).build());
+    public static final RegistryObject<Item> INGOT_BRONZE = ITEMS.register("ingot_bronze", () -> new HTUItem.Builder().itemGroup(MainClass.STEAM_CREATIVE_TAB).build());
 
     //blocks
-    public static final RegistryObject<Block> BLOCK_COPPER = BLOCKS.register("block_copper", () -> new HTUBlock(BlockPropertyPatterns.blockMetal()));
-    public static final RegistryObject<Block> BLOCK_TIN = BLOCKS.register("block_tin", () -> new HTUBlock(BlockPropertyPatterns.blockMetal()));
-    public static final RegistryObject<Block> BLOCK_BRONZE = BLOCKS.register("block_bronze", () -> new HTUBlock(BlockPropertyPatterns.blockMetal()));
+    public static final RegistryObject<Block> BLOCK_COPPER = BLOCKS.register("block_copper",  new HTUBlock.Builder().withProperties(BlockPropertyPatterns.blockMetal()).build());
+    public static final RegistryObject<Block> BLOCK_TIN = BLOCKS.register("block_tin",  new HTUBlock.Builder().withProperties(BlockPropertyPatterns.blockMetal()).build());
+    public static final RegistryObject<Block> BLOCK_BRONZE = BLOCKS.register("block_bronze", new HTUBlock.Builder().withProperties(BlockPropertyPatterns.blockMetal()).build());
 
     //block items
-    public static final RegistryObject<Item> BLOCK_COPPER_ITEM = ITEMS.register("block_copper", () -> new HTUItemBlock(BLOCK_COPPER.get(), MainClass.STEAM_CREATIVE_TAB));
-    public static final RegistryObject<Item> BLOCK_TIN_ITEM = ITEMS.register("block_tin", () -> new HTUItemBlock(BLOCK_TIN.get(), MainClass.STEAM_CREATIVE_TAB));
-    public static final RegistryObject<Item> BLOCK_BRONZE_ITEM = ITEMS.register("block_bronze", () -> new HTUItemBlock(BLOCK_BRONZE.get(), MainClass.STEAM_CREATIVE_TAB));
+    public static final RegistryObject<Item> BLOCK_COPPER_ITEM = ITEMS.register("block_copper", () -> new HTUItem.Builder().itemGroup(MainClass.STEAM_CREATIVE_TAB).block(BLOCK_COPPER.get()).build());
+    public static final RegistryObject<Item> BLOCK_TIN_ITEM = ITEMS.register("block_tin", () -> new HTUItem.Builder().itemGroup(MainClass.STEAM_CREATIVE_TAB).block(BLOCK_TIN.get()).build());
+    public static final RegistryObject<Item> BLOCK_BRONZE_ITEM = ITEMS.register("block_bronze", () -> new HTUItem.Builder().itemGroup(MainClass.STEAM_CREATIVE_TAB).block(BLOCK_BRONZE.get()).build());
 
     //ores
-    public static final RegistryObject<Block> ORE_COPPER = BLOCKS.register("block_copper_ore", () -> new HTUOre(BlockPropertyPatterns.blockOre()));
-    public static final RegistryObject<Block> ORE_TIN = BLOCKS.register("block_tin_ore", () -> new HTUOre(BlockPropertyPatterns.blockOre()));
+    public static final RegistryObject<Block> ORE_COPPER = BLOCKS.register("block_copper_ore",  new HTUBlock.Builder().withProperties(BlockPropertyPatterns.blockOre()).build());
+    public static final RegistryObject<Block> ORE_TIN = BLOCKS.register("block_tin_ore",  new HTUBlock.Builder().withProperties(BlockPropertyPatterns.blockOre()).build());
 
     //ore items
-    public static final RegistryObject<Item> ORE_COPPER_ITEM = ITEMS.register("block_copper_ore", () -> new HTUItemBlock(ORE_COPPER.get(), MainClass.STEAM_CREATIVE_TAB));
-    public static final RegistryObject<Item> ORE_TIN_ITEM = ITEMS.register("block_tin_ore", () -> new HTUItemBlock(ORE_TIN.get(), MainClass.STEAM_CREATIVE_TAB));
+    public static final RegistryObject<Item> ORE_COPPER_ITEM = ITEMS.register("block_copper_ore", () -> new HTUItem.Builder().itemGroup(MainClass.STEAM_CREATIVE_TAB).block(ORE_COPPER.get()).build());
+    public static final RegistryObject<Item> ORE_TIN_ITEM = ITEMS.register("block_tin_ore",  () -> new HTUItem.Builder().itemGroup(MainClass.STEAM_CREATIVE_TAB).block(ORE_TIN.get()).build());
 
     //primitive furnace
-    public static final RegistryObject<Block> BLOCK_PRIMITIVE_FURNACE = BLOCKS.register("block_furnace", BlockPrimitiveFurnace::new);
-    public static final RegistryObject<Item> BLOCK_PRIMITIVE_FURNACE_ITEM = ITEMS.register("block_furnace", () -> new HTUItemBlock(BLOCK_PRIMITIVE_FURNACE.get(), MainClass.PRIMAL_CREATIVE_TAB));
+    public static final RegistryObject<Block> BLOCK_PRIMITIVE_FURNACE = BLOCKS.register("block_furnace", new HTUBlock.Builder().setBlock(BlockPrimitiveFurnace::new).build());
+    public static final RegistryObject<Item> BLOCK_PRIMITIVE_FURNACE_ITEM = ITEMS.register("block_furnace",  () -> new HTUItem.Builder().itemGroup(MainClass.PRIMAL_CREATIVE_TAB).block(BLOCK_PRIMITIVE_FURNACE.get()).build());
 
     //smeltery
-    public static final RegistryObject<Block> BLOCK_SMELTERY = BLOCKS.register("block_smeltery", BlockSmeltery::new);
-    public static final RegistryObject<Item> BLOCK_SMELTERY_ITEM = ITEMS.register("block_smeltery", () -> new HTUItemBlock(BLOCK_SMELTERY.get(), MainClass.STEAM_CREATIVE_TAB));
+    public static final RegistryObject<Block> BLOCK_SMELTERY = BLOCKS.register("block_smeltery", new HTUBlock.Builder().setBlock(BlockSmeltery::new).build());
+    public static final RegistryObject<Item> BLOCK_SMELTERY_ITEM = ITEMS.register("block_smeltery",  () -> new HTUItem.Builder().itemGroup(MainClass.STEAM_CREATIVE_TAB).block(BLOCK_SMELTERY.get()).build());
 
     //steam boiler
-    public static final RegistryObject<Block> BLOCK_STEAM_BOILER = BLOCKS.register("block_steam_boiler", BlockSteamBoiler::new);
-    public static final RegistryObject<Block> BLOCK_STEAM_BOILER_TOP = BLOCKS.register("block_steam_boiler_top", BlockSteamBoilerTop::new);
-    public static final RegistryObject<Item> BLOCK_STEAM_BOILER_ITEM = ITEMS.register("block_steam_boiler", () -> new HTUItemBlock(BLOCK_STEAM_BOILER.get(), MainClass.STEAM_CREATIVE_TAB));
+    public static final RegistryObject<Block> BLOCK_STEAM_BOILER = BLOCKS.register("block_steam_boiler",new HTUBlock.Builder().setBlock(BlockSteamBoiler::new).build());
+    public static final RegistryObject<Block> BLOCK_STEAM_BOILER_TOP = BLOCKS.register("block_steam_boiler_top", new HTUBlock.Builder().setBlock(BlockSteamBoilerTop::new).build());
+    public static final RegistryObject<Item> BLOCK_STEAM_BOILER_ITEM = ITEMS.register("block_steam_boiler",  () -> new HTUItem.Builder().itemGroup(MainClass.STEAM_CREATIVE_TAB).block(BLOCK_STEAM_BOILER.get()).build());
 
     //pipe
-    public static final RegistryObject<Block> BLOCK_PIPE = BLOCKS.register("block_pipe", BlockPipeFluid::new);
-    public static final RegistryObject<Item> BLOCK_PIPE_ITEM = ITEMS.register("block_pipe", () -> new HTUItemBlock(BLOCK_PIPE.get(), MainClass.STEAM_CREATIVE_TAB));
+    public static final RegistryObject<Block> BLOCK_PIPE = BLOCKS.register("block_pipe",new HTUBlock.Builder().setBlock(BlockPipeFluid::new).build());
+    public static final RegistryObject<Item> BLOCK_PIPE_ITEM = ITEMS.register("block_pipe", () -> new HTUItem.Builder().itemGroup(MainClass.STEAM_CREATIVE_TAB).block(BLOCK_PIPE.get()).build());
 
     //pump
-    public static final RegistryObject<Block> BLOCK_WATER_PUMP = BLOCKS.register("block_water_pump", BlockWaterPump::new);
-    public static final RegistryObject<Item> BLOCK_WATER_PUMP_ITEM = ITEMS.register("block_water_pump", () -> new HTUItemBlock(BLOCK_WATER_PUMP.get(), MainClass.STEAM_CREATIVE_TAB));
+    public static final RegistryObject<Block> BLOCK_WATER_PUMP = BLOCKS.register("block_water_pump", new HTUBlock.Builder().setBlock(BlockWaterPump::new).build());
+    public static final RegistryObject<Item> BLOCK_WATER_PUMP_ITEM = ITEMS.register("block_water_pump", () -> new HTUItem.Builder().itemGroup(MainClass.STEAM_CREATIVE_TAB).block(BLOCK_WATER_PUMP.get()).build());
 
     //tank
-    public static final RegistryObject<Block> BLOCK_FLUID_TANK = BLOCKS.register("block_fluid_tank", BlockFluidTank::new);
-    public static final RegistryObject<Item> BLOCK_FLUID_TANK_ITEM = ITEMS.register("block_fluid_tank", () -> new HTUItemBlock(BLOCK_FLUID_TANK.get(), MainClass.STEAM_CREATIVE_TAB));
+    public static final RegistryObject<Block> BLOCK_FLUID_TANK = BLOCKS.register("block_fluid_tank",new HTUBlock.Builder().setBlock(BlockFluidTank::new).build());
+    public static final RegistryObject<Item> BLOCK_FLUID_TANK_ITEM = ITEMS.register("block_fluid_tank", () -> new HTUItem.Builder().itemGroup(MainClass.STEAM_CREATIVE_TAB).block(BLOCK_FLUID_TANK.get()).build());
 
-    //fluid blocks
+    //fluid blocks TODO: Remove this thing..
     public static final RegistryObject<FlowingFluidBlock> BLOCK_FLUID_STEAM = BLOCKS.register("block_fluid_steam",() -> new FlowingFluidBlock(() -> FluidSteam.STEAM, Block.Properties.create(Material.WATER).noDrops()));
 
     //fluids
