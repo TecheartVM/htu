@@ -31,7 +31,6 @@ import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fml.network.NetworkHooks;
 import net.minecraftforge.registries.ForgeRegistries;
-import techeart.htu.utils.HTUTileEntityType;
 import techeart.htu.utils.RegistryHandler;
 import techeart.htu.utils.registration.HTUBlock;
 
@@ -201,7 +200,7 @@ public class BlockSteamBoiler extends HTUBlock implements ITileEntityProvider
 
     @Nullable
     @Override
-    public TileEntity createNewTileEntity(IBlockReader worldIn) { return HTUTileEntityType.STEAM_BOILER.get().create(); }
+    public TileEntity createNewTileEntity(IBlockReader worldIn) { return RegistryHandler.STEAM_BOILER_TE.get().create(); }
 
     @Override
     public void onReplaced(BlockState state, World world, BlockPos pos, BlockState newState, boolean isMoving)

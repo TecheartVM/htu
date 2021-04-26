@@ -13,12 +13,11 @@ import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.item.crafting.IRecipeType;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.AbstractFurnaceTileEntity;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
-import techeart.htu.utils.HTUTileEntityType;
+import techeart.htu.utils.RegistryHandler;
 
 import javax.annotation.Nullable;
 import java.util.Random;
@@ -44,7 +43,7 @@ public class TileEntityPrimitiveFurnace extends AbstractFurnaceTileEntity
 
     public TileEntityPrimitiveFurnace()
     {
-        this(HTUTileEntityType.FURNACE.get());
+        this(RegistryHandler.FURNACE_TE.get());
     }
 
     public TileEntityPrimitiveFurnace(TileEntityType<?> tileEntityTypeIn) { super(tileEntityTypeIn, IRecipeType.SMELTING); }

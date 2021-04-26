@@ -6,13 +6,11 @@ import net.minecraft.block.ITileEntityProvider;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.fluid.Fluid;
-import net.minecraft.inventory.container.PlayerContainer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.loot.LootContext;
@@ -33,16 +31,14 @@ import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler.FluidAction;
 import net.minecraftforge.fluids.capability.IFluidHandlerItem;
-import net.minecraftforge.fluids.capability.templates.FluidTank;
-import techeart.htu.utils.HTUTileEntityType;
 import techeart.htu.utils.KeyboardHelper;
 import techeart.htu.utils.ModUtils;
+import techeart.htu.utils.RegistryHandler;
 import techeart.htu.utils.registration.HTUBlock;
 
 import javax.annotation.Nullable;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -265,7 +261,7 @@ public class BlockFluidTank extends HTUBlock implements ITileEntityProvider
     @Override
     public TileEntity createNewTileEntity(IBlockReader worldIn)
     {
-        TileEntity te = HTUTileEntityType.FLUID_TANK.get().create();
+        TileEntity te = RegistryHandler.FLUID_TANK_TE.get().create();
         tileEntity = (TileEntityFluidTank) te;
         return te;
     }

@@ -16,7 +16,6 @@ public class HTUBlock extends Block
 
     public static class Builder
     {
-        @Nullable
         private Block.Properties properties = AbstractBlock.Properties.create(Material.AIR);
 
         @Nullable

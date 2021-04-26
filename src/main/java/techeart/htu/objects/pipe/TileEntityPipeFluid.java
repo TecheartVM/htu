@@ -12,7 +12,7 @@ import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import techeart.htu.MainClass;
-import techeart.htu.utils.HTUTileEntityType;
+import techeart.htu.utils.RegistryHandler;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -32,7 +32,7 @@ public class TileEntityPipeFluid extends TileEntity implements ITickableTileEnti
 
     public TileEntityPipeFluid()
     {
-        super(HTUTileEntityType.FLUID_PIPE.get());
+        super(RegistryHandler.FLUID_PIPE_TE.get());
     }
 
     /*IPipe*/

@@ -18,7 +18,7 @@ import net.minecraft.util.math.shapes.VoxelShapes;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
 import net.minecraftforge.common.ToolType;
-import techeart.htu.utils.HTUTileEntityType;
+import techeart.htu.utils.RegistryHandler;
 import techeart.htu.utils.registration.HTUBlock;
 
 import javax.annotation.Nullable;
@@ -45,6 +45,7 @@ public class BlockWaterPump extends HTUBlock implements ITileEntityProvider
     {
         super(Block.Properties.create(Material.IRON)
                 .harvestTool(ToolType.PICKAXE)
+                .setRequiresTool()
                 .hardnessAndResistance(4.0f, 7.0f)
                 .sound(SoundType.METAL)
                 .notSolid()
@@ -69,7 +70,7 @@ public class BlockWaterPump extends HTUBlock implements ITileEntityProvider
 
     @Nullable
     @Override
-    public TileEntity createNewTileEntity(IBlockReader worldIn) { return HTUTileEntityType.WATER_PUMP.get().create(); }
+    public TileEntity createNewTileEntity(IBlockReader worldIn) { return RegistryHandler.WATER_PUMP_TE.get().create(); }
 
     @Override
     public BlockState getStateForPlacement(BlockItemUseContext context)

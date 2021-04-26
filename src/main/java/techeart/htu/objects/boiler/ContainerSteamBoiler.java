@@ -13,7 +13,6 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.ForgeHooks;
 import techeart.htu.objects.inventory.slots.HTUFurnaceFuelSlot;
-import techeart.htu.utils.HTUContainerType;
 import techeart.htu.utils.HTUIntReferenceHolder;
 import techeart.htu.utils.RegistryHandler;
 
@@ -30,7 +29,7 @@ public class ContainerSteamBoiler extends Container
 
     public ContainerSteamBoiler(final int windowId, final PlayerInventory playerInvenoty, final TileEntitySteamBoiler tileEntity)
     {
-        super(HTUContainerType.STEAM_BOILER.get(), windowId);
+        super(RegistryHandler.STEAM_BOILER_CONTAINER.get(), windowId);
 
         this.tileEntity = tileEntity;
 
@@ -97,7 +96,7 @@ public class ContainerSteamBoiler extends Container
     @Override
     public boolean canInteractWith(PlayerEntity playerIn)
     {
-        return isWithinUsableDistance(IWorldPosCallable.of(tileEntity.getWorld(), tileEntity.getPos()), playerIn, RegistryHandler.BLOCK_STEAM_BOILER.get());
+        return isWithinUsableDistance(IWorldPosCallable.of(tileEntity.getWorld(), tileEntity.getPos()), playerIn, RegistryHandler.BLOCK_STEAM_BOILER.getPrimary());
     }
 
     public ItemStack transferStackInSlot(PlayerEntity playerIn, int index)

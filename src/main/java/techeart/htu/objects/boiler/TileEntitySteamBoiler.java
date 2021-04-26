@@ -32,7 +32,10 @@ import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import techeart.htu.MainClass;
 import techeart.htu.objects.HTUFluidTank;
-import techeart.htu.utils.*;
+import techeart.htu.utils.FuelTemperatures;
+import techeart.htu.utils.HTUFluidHandler;
+import techeart.htu.utils.HTUHooks;
+import techeart.htu.utils.RegistryHandler;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -97,7 +100,7 @@ public class TileEntitySteamBoiler extends TileEntity implements IInventory, INa
 
     public TileEntitySteamBoiler()
     {
-        super(HTUTileEntityType.STEAM_BOILER.get());
+        super(RegistryHandler.STEAM_BOILER_TE.get());
 
         int steamVolume = internalVolumeSteam + (Math.floorDiv(internalVolumeSteam, ejectionPressure) * (maxPressure - ejectionPressure));
         fluidHandler = new HTUFluidHandler(

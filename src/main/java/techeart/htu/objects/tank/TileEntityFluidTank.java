@@ -7,7 +7,6 @@ import net.minecraft.network.play.server.SUpdateTileEntityPacket;
 import net.minecraft.tileentity.ITickableTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Direction;
-import net.minecraft.util.Direction8;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.server.ServerWorld;
@@ -18,7 +17,7 @@ import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler.FluidAction;
 import net.minecraftforge.fluids.capability.templates.FluidTank;
-import techeart.htu.utils.HTUTileEntityType;
+import techeart.htu.utils.RegistryHandler;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -41,7 +40,7 @@ public class TileEntityFluidTank extends TileEntity implements ITickableTileEnti
 
     public TileEntityFluidTank()
     {
-        super(HTUTileEntityType.FLUID_TANK.get());
+        super(RegistryHandler.FLUID_TANK_TE.get());
     }
 
     /*TileEntity*/

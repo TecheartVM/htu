@@ -27,7 +27,9 @@ import techeart.htu.objects.pipe.IPipeGrid;
 import techeart.htu.objects.smeltery.GuiSmeltery;
 import techeart.htu.objects.tank.RendererFluidTank;
 import techeart.htu.recipes.alloying.AlloyRecipes;
-import techeart.htu.utils.*;
+import techeart.htu.utils.FuelTemperatures;
+import techeart.htu.utils.RegistryHandler;
+import techeart.htu.utils.WorldGridsManager;
 import techeart.htu.world.gen.OreGeneration;
 
 import java.util.HashSet;
@@ -77,12 +79,12 @@ public class MainClass
     private void setupClient(final FMLClientSetupEvent event)
     {
         //register gui containers
-        ScreenManager.registerFactory(HTUContainerType.SMELTERY.get(), GuiSmeltery::new);
-        ScreenManager.registerFactory(HTUContainerType.STEAM_BOILER.get(), GuiSteamBoiler::new);
+        ScreenManager.registerFactory(RegistryHandler.SMELTERY_CONTAINER.get(), GuiSmeltery::new);
+        ScreenManager.registerFactory(RegistryHandler.STEAM_BOILER_CONTAINER.get(), GuiSteamBoiler::new);
 
         //register custom renderers
-        RenderTypeLookup.setRenderLayer(RegistryHandler.BLOCK_FLUID_TANK.get(), RenderType.getCutout());
-        ClientRegistry.bindTileEntityRenderer(HTUTileEntityType.FLUID_TANK.get(), RendererFluidTank::new);
+        RenderTypeLookup.setRenderLayer(RegistryHandler.BLOCK_FLUID_TANK.getPrimary(), RenderType.getCutout());
+        ClientRegistry.bindTileEntityRenderer(RegistryHandler.FLUID_TANK_TE.get(), RendererFluidTank::new);
 
         //register fluid render types
         final Map<Fluid, RenderType> FLUID_RENDER_TYPES = Util.make(Maps.newHashMap(), (map) -> {
@@ -120,7 +122,7 @@ public class MainClass
         @Override
         public ItemStack createIcon()
         {
-            return new ItemStack(RegistryHandler.BLOCK_STEAM_BOILER_ITEM.get());
+            return new ItemStack(RegistryHandler.BLOCK_STEAM_BOILER.getSecondary());
         }
     };
 
@@ -129,7 +131,7 @@ public class MainClass
         @Override
         public ItemStack createIcon()
         {
-            return new ItemStack(RegistryHandler.BLOCK_PRIMITIVE_FURNACE.get());
+            return new ItemStack(RegistryHandler.BLOCK_PRIMITIVE_FURNACE.getSecondary());
         }
     };
 

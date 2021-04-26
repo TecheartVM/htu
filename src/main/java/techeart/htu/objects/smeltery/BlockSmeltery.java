@@ -1,6 +1,9 @@
 package techeart.htu.objects.smeltery;
 
-import net.minecraft.block.*;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.ITileEntityProvider;
+import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -27,7 +30,6 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.ToolType;
 import net.minecraftforge.fml.network.NetworkHooks;
 import techeart.htu.objects.TileEntityIgnitable;
-import techeart.htu.utils.HTUTileEntityType;
 import techeart.htu.utils.RegistryHandler;
 import techeart.htu.utils.registration.HTUBlock;
 
@@ -55,7 +57,7 @@ public class BlockSmeltery extends HTUBlock implements ITileEntityProvider
 
         if(!(tileEntity instanceof TileEntitySmeltery)) return;
 
-        world.setBlockState(pos, RegistryHandler.BLOCK_SMELTERY.get().getDefaultState().with(FACING, state.get(FACING)).with(LIT, active), 3);
+        world.setBlockState(pos, RegistryHandler.BLOCK_SMELTERY.getPrimary().getDefaultState().with(FACING, state.get(FACING)).with(LIT, active), 3);
 
         if(tileEntity != null)
         {
@@ -109,7 +111,7 @@ public class BlockSmeltery extends HTUBlock implements ITileEntityProvider
     @Override
     public TileEntity createNewTileEntity(IBlockReader worldIn)
     {
-        return HTUTileEntityType.SMELTERY.get().create();
+        return RegistryHandler.SMELTERY_TE.get().create();
     }
 
     @Override

@@ -28,8 +28,8 @@ public class OreGeneration
     public static void setupOreGenerator()
     {
         //add Features to the list
-        OwerworldFeatureList.add(registerOreFeature("ore_copper",RegistryHandler.ORE_COPPER.get(),9,64,20));
-        OwerworldFeatureList.add(registerOreFeature("ore_tin",RegistryHandler.ORE_TIN.get(),9,64,20));
+        OwerworldFeatureList.add(registerOreFeature("ore_copper",RegistryHandler.ORE_COPPER.getPrimary(),9,64,20));
+        OwerworldFeatureList.add(registerOreFeature("ore_tin",RegistryHandler.ORE_TIN.getPrimary(),9,64,20));
         //success msg
         MainClass.LOGGER.info("OreFeature has been registered");
 

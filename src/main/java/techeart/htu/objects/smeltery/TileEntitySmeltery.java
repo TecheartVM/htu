@@ -7,7 +7,7 @@ import net.minecraft.inventory.ISidedInventory;
 import net.minecraft.inventory.ItemStackHelper;
 import net.minecraft.inventory.container.Container;
 import net.minecraft.inventory.container.INamedContainerProvider;
-import net.minecraft.item.*;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.ITickableTileEntity;
 import net.minecraft.util.Direction;
@@ -18,12 +18,10 @@ import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraftforge.common.ForgeHooks;
 import techeart.htu.MainClass;
 import techeart.htu.objects.TileEntityIgnitable;
-import techeart.htu.objects.boiler.ContainerSteamBoiler;
 import techeart.htu.recipes.alloying.AlloyRecipe;
 import techeart.htu.recipes.alloying.AlloyRecipes;
-import techeart.htu.utils.HTUTileEntityType;
 import techeart.htu.utils.InventoryHelper;
-import techeart.htu.utils.ObservableNNList;
+import techeart.htu.utils.RegistryHandler;
 
 import javax.annotation.Nullable;
 
@@ -48,7 +46,7 @@ public class TileEntitySmeltery extends TileEntityIgnitable implements ISidedInv
 
     public TileEntitySmeltery()
     {
-        super(HTUTileEntityType.SMELTERY.get());
+        super(RegistryHandler.SMELTERY_TE.get());
     }
 
     /*ISidedInventory*/

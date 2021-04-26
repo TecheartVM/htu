@@ -2,7 +2,9 @@ package techeart.htu.objects.smeltery;
 
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.container.*;
+import net.minecraft.inventory.container.Container;
+import net.minecraft.inventory.container.IContainerListener;
+import net.minecraft.inventory.container.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.tileentity.TileEntity;
@@ -10,7 +12,6 @@ import net.minecraft.util.IWorldPosCallable;
 import net.minecraft.util.NonNullList;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import techeart.htu.utils.HTUContainerType;
 import techeart.htu.utils.HTUIntReferenceHolder;
 import techeart.htu.utils.RegistryHandler;
 
@@ -28,7 +29,7 @@ public class ContainerSmeltery extends Container
 
     public ContainerSmeltery(final int windowId, final PlayerInventory playerInvenoty, final TileEntitySmeltery tileEntity)
     {
-        super(HTUContainerType.SMELTERY.get(), windowId);
+        super(RegistryHandler.SMELTERY_CONTAINER.get(), windowId);
 
         this.tileEntity = tileEntity;
 
@@ -167,7 +168,7 @@ public class ContainerSmeltery extends Container
     @Override
     public boolean canInteractWith(PlayerEntity playerIn)
     {
-        return isWithinUsableDistance(IWorldPosCallable.of(tileEntity.getWorld(), tileEntity.getPos()), playerIn, RegistryHandler.BLOCK_SMELTERY.get());
+        return isWithinUsableDistance(IWorldPosCallable.of(tileEntity.getWorld(), tileEntity.getPos()), playerIn, RegistryHandler.BLOCK_SMELTERY.getPrimary());
     }
 
     public boolean isBurning() { return tileEntity.isBurning(); }

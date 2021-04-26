@@ -23,6 +23,7 @@
 
   "block.htu.block_fluid_tank": "Fluid tank",
   "block.htu.block_pipe": "Fluid pipe",
+  "block.htu.block_water_pump": "Steam water pump",
 
   "advancements.htu.steam_age.root.title":"HTU Steam age",
   "advancements.htu.steam_age.root.desc": "Start a new age of progress",

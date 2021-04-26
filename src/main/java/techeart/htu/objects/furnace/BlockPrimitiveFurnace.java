@@ -18,7 +18,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.ToolType;
 import techeart.htu.objects.TileEntityIgnitable;
-import techeart.htu.utils.HTUTileEntityType;
+import techeart.htu.utils.RegistryHandler;
 
 import java.util.Random;
 
@@ -88,7 +88,7 @@ public class BlockPrimitiveFurnace extends AbstractFurnaceBlock
     }
 
     @Override
-    public TileEntity createNewTileEntity(IBlockReader worldIn) { return HTUTileEntityType.FURNACE.get().create(); }
+    public TileEntity createNewTileEntity(IBlockReader worldIn) { return RegistryHandler.FURNACE_TE.get().create(); }
 
     @OnlyIn(Dist.CLIENT)
     public void animateTick(BlockState stateIn, World worldIn, BlockPos pos, Random rand) {

@@ -8,17 +8,13 @@ import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.ITickableTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Direction;
-import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler;
-import net.minecraftforge.fluids.capability.templates.FluidTank;
-import net.minecraftforge.registries.ForgeRegistries;
 import techeart.htu.objects.HTUFluidTank;
 import techeart.htu.utils.HTUFluidHandler;
-import techeart.htu.utils.HTUTileEntityType;
 import techeart.htu.utils.RegistryHandler;
 
 import javax.annotation.Nonnull;
@@ -41,7 +37,7 @@ public class TileEntityWaterPump extends TileEntity implements ITickableTileEnti
 
     public TileEntityWaterPump()
     {
-        super(HTUTileEntityType.WATER_PUMP.get());
+        super(RegistryHandler.WATER_PUMP_TE.get());
 
         fluidHandler = new HTUFluidHandler(
                 new HTUFluidTank(internalVolumeWater, WATER, HTUFluidTank.Type.EJECT_ONLY),

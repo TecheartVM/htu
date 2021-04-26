@@ -20,7 +20,6 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.ToolType;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
-import techeart.htu.utils.HTUTileEntityType;
 import techeart.htu.utils.ModUtils;
 import techeart.htu.utils.RegistryHandler;
 
@@ -64,7 +63,7 @@ public class BlockPipeFluid extends SixWayBlock implements ITileEntityProvider
     {
         super.onBlockPlacedBy(worldIn, pos, state, placer, stack);
         TileEntity tileEntity = worldIn.getTileEntity(pos);
-        if(tileEntity != null && tileEntity.getType() == HTUTileEntityType.FLUID_PIPE.get())
+        if(tileEntity != null && tileEntity.getType() == RegistryHandler.FLUID_PIPE_TE.get())
         {
             //if(!worldIn.isRemote) ((TileEntityPipeFluid)tileEntity).createGrid();
         }
@@ -77,7 +76,7 @@ public class BlockPipeFluid extends SixWayBlock implements ITileEntityProvider
         if(!worldIn.isRemote())
         {
             TileEntity tileEntity = worldIn.getTileEntity(currentPos);
-            if(tileEntity != null && tileEntity.getType() == HTUTileEntityType.FLUID_PIPE.get())
+            if(tileEntity != null && tileEntity.getType() == RegistryHandler.FLUID_PIPE_TE.get())
             {
                 ((TileEntityPipeFluid)tileEntity).updateGrid();
             }
@@ -90,7 +89,7 @@ public class BlockPipeFluid extends SixWayBlock implements ITileEntityProvider
     public ActionResultType onBlockActivated(BlockState state, World worldIn, BlockPos pos, PlayerEntity player, Hand handIn, BlockRayTraceResult hit)
     {
         TileEntity tileEntity = worldIn.getTileEntity(pos);
-        if(tileEntity != null && tileEntity.getType() == HTUTileEntityType.FLUID_PIPE.get())
+        if(tileEntity != null && tileEntity.getType() == RegistryHandler.FLUID_PIPE_TE.get())
         {
             if(!worldIn.isRemote) //System.out.println("Fluid inside: " + ((TileEntityPipeFluid)tileEntity).getFluidInTank(0).getAmount());
                 ModUtils.playerInfoMessage("Fluid inside: " + ((TileEntityPipeFluid)tileEntity).getFluidInTank(0).getAmount() + " mb", player);
@@ -100,7 +99,7 @@ public class BlockPipeFluid extends SixWayBlock implements ITileEntityProvider
 
     private boolean isConnectable(IBlockReader world, BlockPos pos, Direction blockFace)
     {
-        if(world.getBlockState(pos).getBlock() == RegistryHandler.BLOCK_PIPE.get()) return true;
+        if(world.getBlockState(pos).getBlock() == RegistryHandler.BLOCK_PIPE.getPrimary()) return true;
         if(world.getBlockState(pos).getBlock() instanceof ITileEntityProvider)
         {
             TileEntity tileEntity = world.getTileEntity(pos);
@@ -123,6 +122,6 @@ public class BlockPipeFluid extends SixWayBlock implements ITileEntityProvider
     @Override
     public TileEntity createNewTileEntity(IBlockReader worldIn)
     {
-        return HTUTileEntityType.FLUID_PIPE.get().create();
+        return RegistryHandler.FLUID_PIPE_TE.get().create();
     }
 }
