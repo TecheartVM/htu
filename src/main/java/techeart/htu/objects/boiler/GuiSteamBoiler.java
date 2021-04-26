@@ -36,7 +36,7 @@ public class GuiSteamBoiler extends ContainerScreen<ContainerSteamBoiler>
         GuiSteamBoiler.blit(matrixStack, this.guiLeft, this.guiTop, 0, 0, this.xSize, this.ySize, 256, 256);
 
         //draw fuel bar
-        if (((ContainerSteamBoiler)container).isBurning())
+        if (container.isBurning())
         {
             int k = this.getBurnLeftScaled(13);
             this.blit(matrixStack, this.guiLeft + 81, this.guiTop + 41 + 12 - k, 176, 12 - k, 14, k + 1);
@@ -94,17 +94,14 @@ public class GuiSteamBoiler extends ContainerScreen<ContainerSteamBoiler>
     @Override
     protected void drawGuiContainerForegroundLayer(MatrixStack matrixStack, int x, int y)
     {
-        super.drawGuiContainerForegroundLayer(matrixStack, x, y);
-        String tileName = this.title.getUnformattedComponentText();
-        this.font.drawString(matrixStack, tileName, this.xSize / 2 - this.font.getStringWidth(tileName) / 2, 6, 4210752);
-        this.font.drawString(matrixStack, this.playerInventory.getDisplayName().getUnformattedComponentText(), 8, this.ySize - 96 + 2, 4210752);
+        this.font.drawString(matrixStack, this.title.getString(), this.xSize / 2f - this.font.getStringWidth(this.title.getString()) / 2f, 6, 4210752);
+        this.font.func_243248_b(matrixStack, this.playerInventory.getDisplayName(), 8, this.ySize - 96 + 4, 4210752);
     }
 
     @OnlyIn(Dist.CLIENT)
     @Override
     public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks)
     {
-        renderBackground(matrixStack);
         super.render(matrixStack, mouseX, mouseY, partialTicks);
         renderHoveredTooltip(matrixStack, mouseX, mouseY);
     }

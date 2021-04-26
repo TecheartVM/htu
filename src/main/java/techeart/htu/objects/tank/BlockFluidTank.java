@@ -5,19 +5,20 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.ITileEntityProvider;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.fluid.Fluid;
+import net.minecraft.inventory.container.PlayerContainer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.loot.LootContext;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.Hand;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.SoundEvent;
+import net.minecraft.util.*;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.math.shapes.ISelectionContext;
@@ -39,12 +40,17 @@ import techeart.htu.utils.ModUtils;
 import techeart.htu.utils.registration.HTUBlock;
 
 import javax.annotation.Nullable;
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
 public class BlockFluidTank extends HTUBlock implements ITileEntityProvider
 {
     private TileEntityFluidTank tileEntity;
+    private FluidStack fluidInTank;
 
     public BlockFluidTank()
     {
@@ -62,30 +68,61 @@ public class BlockFluidTank extends HTUBlock implements ITileEntityProvider
     @Override
     public List<ItemStack> getDrops(BlockState state, LootContext.Builder builder)
     {
-        List<ItemStack> drop = new ArrayList<>();
+        List<ItemStack> drops = new ArrayList<>();
         ItemStack item = new ItemStack(this.getBlock().asItem(), 1);
-        drop.add(item);
-        if(tileEntity == null) return drop;
+        drops.add(item);
+        if(builder.getWorld().isRemote) return drops;
+        if(fluidInTank == null || fluidInTank.isEmpty()) return drops;
+
         CompoundNBT data = item.getOrCreateTag();
-        tileEntity.write(data);
-        return drop;
+        fluidInTank.writeToNBT(data);
+        return drops;
+    }
+
+    @Override
+    public void onReplaced(BlockState state, World worldIn, BlockPos pos, BlockState newState, boolean isMoving)
+    {
+        if(!worldIn.isRemote)
+            fluidInTank = ((TileEntityFluidTank)worldIn.getTileEntity(pos)).getFluid();
+        super.onReplaced(state, worldIn, pos, newState, isMoving);
     }
 
     @Override
     @OnlyIn(Dist.CLIENT)
     public void addInformation(ItemStack stack, @Nullable IBlockReader worldIn, List<ITextComponent> tooltip, ITooltipFlag flagIn)
     {
-        CompoundNBT data = stack.getTag();
-
         if(KeyboardHelper.isHoldingShift())
+        {
+            CompoundNBT data = stack.getTag();
             if (data != null)
+            {
+                Fluid fluid = FluidStack.loadFluidStackFromNBT(data).getFluid();
+                InputStream is;
+                BufferedImage image;
+                int fluidColor = 248572;
+                try
+                {
+                    ResourceLocation fluidRes = fluid.getAttributes().getStillTexture();
+                    is = Minecraft.getInstance().getResourceManager().getResource(
+                            new ResourceLocation(fluidRes.getNamespace(), "textures/" + fluidRes.getPath() + ".png")
+                    ).getInputStream();
+                    image = ImageIO.read(is);
+                    fluidColor = image.getRGB(0, 0);
+                    //TODO apply fluid overlay color to texture color
+                }
+                catch(Exception e){
+                    //e.printStackTrace();
+                }
+
+                System.out.println(fluidColor);
+
                 tooltip.add(new StringTextComponent("Fluid: ")
-                        .append(new TranslationTextComponent(ModUtils.getFluidName(data)).setStyle(Style.EMPTY.setColor(Color.fromHex("#0000ff"))))
-                        .append(new StringTextComponent(", "+data.getInt("Amount") + "mB")).setStyle(Style.EMPTY.setItalic(true)));
-            else
-                tooltip.add(new TranslationTextComponent("htu.fluidtank.tooltip"));
-        else
-            tooltip.add(new TranslationTextComponent("htu.moreinfo.tooltip"));
+                        .append(new TranslationTextComponent(ModUtils.getFluidName(data)).setStyle(Style.EMPTY.setColor(Color.fromInt(fluidColor))))//.fromHex("#03cafc"))))
+                        .append(new StringTextComponent(", " + data.getInt("Amount") + "mB")).setStyle(Style.EMPTY.setItalic(true)));
+            }
+            else tooltip.add(new TranslationTextComponent("htu.fluidtank.tooltip"));
+        }
+        else tooltip.add(new TranslationTextComponent("htu.moreinfo.tooltip"));
 
         super.addInformation(stack, worldIn, tooltip, flagIn);
     }
@@ -215,11 +252,12 @@ public class BlockFluidTank extends HTUBlock implements ITileEntityProvider
     public void onBlockPlacedBy(World worldIn, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack)
     {
         super.onBlockPlacedBy(worldIn, pos, state, placer, stack);
+        if(worldIn.isRemote) return;
+
         if(stack.getTag() != null && tileEntity != null)
         {
-            FluidTank f = new FluidTank(TileEntityFluidTank.CAPACITY);
-            f.readFromNBT(stack.getTag());
-            tileEntity.fill(f.getFluid(), FluidAction.EXECUTE);
+            FluidStack f = FluidStack.loadFluidStackFromNBT(stack.getTag());
+            tileEntity.fill(f, FluidAction.EXECUTE);
         }
     }
 

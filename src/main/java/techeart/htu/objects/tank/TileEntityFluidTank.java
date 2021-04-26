@@ -4,8 +4,10 @@ import net.minecraft.block.BlockState;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SUpdateTileEntityPacket;
+import net.minecraft.tileentity.ITickableTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Direction;
+import net.minecraft.util.Direction8;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.server.ServerWorld;
@@ -13,6 +15,7 @@ import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
+import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler.FluidAction;
 import net.minecraftforge.fluids.capability.templates.FluidTank;
 import techeart.htu.utils.HTUTileEntityType;
@@ -20,7 +23,7 @@ import techeart.htu.utils.HTUTileEntityType;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class TileEntityFluidTank extends TileEntity
+public class TileEntityFluidTank extends TileEntity implements ITickableTileEntity
 {
     public static final int CAPACITY = 8000;
 
@@ -61,19 +64,16 @@ public class TileEntityFluidTank extends TileEntity
     // It seems like tile isn't removing on server, when player breaks tank
     public void syncClient()
     {
+        if(this.removed) return;
         if(getWorld() == null) return;
         if(getWorld().isRemote) return;
+
         SUpdateTileEntityPacket pkt = getUpdatePacket();
         ((ServerWorld) getWorld()).getChunkProvider().chunkManager.getTrackingPlayers(new ChunkPos(pos), false).forEach(p -> {
             if(pkt != null)
-            {
                 p.connection.sendPacket(pkt);
-            }
         });
     }
-
-    @Override
-    public CompoundNBT getUpdateTag() { return write(new CompoundNBT()); }
 
     @Nullable
     @Override
@@ -85,10 +85,21 @@ public class TileEntityFluidTank extends TileEntity
     }
 
     @Override
-    public void onDataPacket(NetworkManager net, SUpdateTileEntityPacket pkt) { read(this.world.getBlockState(pkt.getPos()), pkt.getNbtCompound()); }
+    public void onDataPacket(NetworkManager net, SUpdateTileEntityPacket pkt)
+    {
+        if(removed || world == null) return;
+        read(this.world.getBlockState(pkt.getPos()), pkt.getNbtCompound());
+    }
 
     @Override
-    public void handleUpdateTag(BlockState state, CompoundNBT tag) { read(state, tag); }
+    public CompoundNBT getUpdateTag() { return write(new CompoundNBT()); }
+
+    @Override
+    public void handleUpdateTag(BlockState state, CompoundNBT tag)
+    {
+        if(removed || world == null) return;
+        read(state, tag);
+    }
 
     /*ICapabilityProvider*/
     @Nonnull
@@ -96,9 +107,7 @@ public class TileEntityFluidTank extends TileEntity
     public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> capability)
     {
         if (capability == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY)
-        {
             return CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY.orEmpty(capability, LazyOptional.of(() -> (internalVolume)));
-        }
         return super.getCapability(capability);
     }
 
@@ -107,13 +116,8 @@ public class TileEntityFluidTank extends TileEntity
     public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> capability, @Nullable Direction facing)
     {
         if(facing == Direction.DOWN || facing == Direction.UP)
-        {
             if (capability == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY)
-            {
-                //TODO add an ability to lock tank
                 return CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY.orEmpty(capability, LazyOptional.of(() -> (internalVolume)));
-            }
-        }
         return super.getCapability(capability, facing);
     }
 
@@ -139,5 +143,17 @@ public class TileEntityFluidTank extends TileEntity
         float result = MathHelper.lerp(0.1f, prevFluidAmount, internalVolume.getFluid().getAmount());
         prevFluidAmount = result;
         return result;
+    }
+
+    /*ITickableTileEntity*/
+    @Override
+    public void tick()
+    {
+        TileEntity tileBelow = world.getTileEntity(pos.down());
+        if(tileBelow == null) return;
+        LazyOptional<IFluidHandler> lo = tileBelow.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, Direction.UP);
+        if(!lo.isPresent()) return;
+        IFluidHandler fh = lo.orElse(null);
+        drain(fh.fill(new FluidStack(internalVolume.getFluid(), 125), FluidAction.EXECUTE), FluidAction.EXECUTE);
     }
 }
