@@ -53,20 +53,16 @@ public class SlotSmelteryOutput extends Slot
         if (!this.player.world.isRemote)
         {
             int itemAmount = this.removeCount;
-            float experience = 0;//AlloyRecipes.getInstance().getAlloyExperience(stack);
+            float experience = 0;   //TODO AlloyRecipes.getInstance().getAlloyExperience(stack);
 
             if (experience == 0.0F)
-            {
                 itemAmount = 0;
-            }
             else if (experience < 1.0F)
             {
                 int totalXP = MathHelper.floor((float)itemAmount * experience);
 
                 if (totalXP < MathHelper.ceil((float)itemAmount * experience) && Math.random() < (double)((float)itemAmount * experience - (float)totalXP))
-                {
                     ++totalXP;
-                }
 
                 itemAmount = totalXP;
             }

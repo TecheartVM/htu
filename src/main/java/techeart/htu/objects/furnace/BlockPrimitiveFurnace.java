@@ -17,14 +17,14 @@ import net.minecraft.world.World;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.ToolType;
+import techeart.htu.objects.TileEntityIgnitable;
 import techeart.htu.utils.HTUTileEntityType;
 
-import java.util.ArrayList;
 import java.util.Random;
 
 public class BlockPrimitiveFurnace extends AbstractFurnaceBlock
 {
-    private static ArrayList<Item> ignitionTools = new ArrayList<>();
+//    private static ArrayList<Item> ignitionTools = new ArrayList<>();
 
     public BlockPrimitiveFurnace()
     {
@@ -34,7 +34,7 @@ public class BlockPrimitiveFurnace extends AbstractFurnaceBlock
                 .sound(SoundType.STONE)
         );
 
-        ignitionTools.add(Items.FLINT_AND_STEEL);
+//        ignitionTools.add(Items.FLINT_AND_STEEL);
     }
 
     @Override
@@ -54,7 +54,12 @@ public class BlockPrimitiveFurnace extends AbstractFurnaceBlock
             TileEntity tileEntity = world.getTileEntity(pos);
             if (tileEntity instanceof TileEntityPrimitiveFurnace)
             {
-                for (Item tool : ignitionTools)
+                if(heldItem == Items.WATER_BUCKET)
+                {
+                    ((TileEntityPrimitiveFurnace) tileEntity).Extinguish();
+                    return ActionResultType.SUCCESS;
+                }
+                for (Item tool : TileEntityIgnitable.IGNITION_TOOLS)
                 {
                     if(heldItem == tool)
                     {
@@ -62,11 +67,6 @@ public class BlockPrimitiveFurnace extends AbstractFurnaceBlock
                         ((TileEntityPrimitiveFurnace) tileEntity).ignite();
                         return ActionResultType.SUCCESS;
                     }
-                }
-                if(heldItem == Items.WATER_BUCKET)
-                {
-                    ((TileEntityPrimitiveFurnace) tileEntity).Extinguish();
-                    return ActionResultType.SUCCESS;
                 }
 
                 this.interactWith(world, pos, player);

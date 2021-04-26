@@ -7,6 +7,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.IWorldPosCallable;
+import net.minecraft.util.NonNullList;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import techeart.htu.utils.HTUContainerType;
@@ -42,17 +43,11 @@ public class ContainerSmeltery extends Container
         //player inventory
         //main
         for(int y = 0; y <3; y++)
-        {
             for(int x = 0; x < 9; x++)
-            {
                 this.addSlot(new Slot(playerInvenoty, x + y * 9 + 9, 8 + x * 18, 84 + y * 18));
-            }
-        }
         //hotbar
         for(int x = 0; x < 9; x++)
-        {
             this.addSlot(new Slot(playerInvenoty, x, 8 + x * 18, 142));
-        }
 
         //int reference holders
         for(int i = 0; i < tileEntity.getFieldCount(); i++)
@@ -60,6 +55,23 @@ public class ContainerSmeltery extends Container
             int fi = i;
             trackInt(new HTUIntReferenceHolder(() -> this.tileEntity.getField(fi), value -> this.tileEntity.setField(fi, value)));
         }
+
+        addListener(new IContainerListener() {
+            @Override
+            public void sendAllContents(Container containerToSend, NonNullList<ItemStack> itemsList)
+            {
+                //ContainerSmeltery.this.tileEntity.updateCurrentRecipe();
+            }
+
+            @Override
+            public void sendSlotContents(Container containerToSend, int slotIndex, ItemStack stack)
+            {
+                if(slotIndex < 4) ContainerSmeltery.this.tileEntity.updateCurrentRecipe();
+            }
+
+            @Override
+            public void sendWindowProperty(Container containerIn, int varToUpdate, int newValue) { }
+        });
     }
 
     private static TileEntitySmeltery getTileEntity(final PlayerInventory playerInventory, final PacketBuffer data)
@@ -69,9 +81,8 @@ public class ContainerSmeltery extends Container
 
         final TileEntity tileEntity = playerInventory.player.world.getTileEntity(data.readBlockPos());
         if(tileEntity instanceof TileEntitySmeltery)
-        {
             return (TileEntitySmeltery)tileEntity;
-        }
+
         throw new IllegalStateException("Illegal tile entity: " + tileEntity);
     }
 
@@ -95,9 +106,7 @@ public class ContainerSmeltery extends Container
     public int getBurnLeftScaled(int pixels)
     {
         int i = this.tileEntity.getField(1);
-
         if (i == 0) { i = 200; }
-
         return this.tileEntity.getField(0) * pixels / i;
     }
 
@@ -115,9 +124,7 @@ public class ContainerSmeltery extends Container
             if (index == 5)
             {
                 if (!this.mergeItemStack(itemstack1, 6, 42, true))
-                {
                     return ItemStack.EMPTY;
-                }
 
                 slot.onSlotChange(itemstack1, itemstack);
             }
@@ -126,47 +133,30 @@ public class ContainerSmeltery extends Container
                 if (TileEntitySmeltery.isItemFuel(itemstack1))
                 {
                     if (!this.mergeItemStack(itemstack1, 4, 5, false))
-                    {
                         return ItemStack.EMPTY;
-                    }
                 }
                 else
                 {
                     if (this.mergeItemStack(itemstack1, 0, 4, false))
-                    {
                         return ItemStack.EMPTY;
-                    }
-                    else if (index > 5 && index < 33)
+                    else if (index < 33)
                     {
                         if (!this.mergeItemStack(itemstack1, 33, 42, false))
-                        {
                             return ItemStack.EMPTY;
-                        }
                     }
                     else if (index >= 33 && index < 42 && !this.mergeItemStack(itemstack1, 6, 33, false))
-                    {
                         return ItemStack.EMPTY;
-                    }
                 }
             }
             else if (!this.mergeItemStack(itemstack1, 6, 42, false))
-            {
                 return ItemStack.EMPTY;
-            }
 
             if (itemstack1.isEmpty())
-            {
                 slot.putStack(ItemStack.EMPTY);
-            }
-            else
-            {
-                slot.onSlotChanged();
-            }
+            else slot.onSlotChanged();
 
             if (itemstack1.getCount() == itemstack.getCount())
-            {
                 return ItemStack.EMPTY;
-            }
 
             slot.onTake(playerIn, itemstack1);
         }

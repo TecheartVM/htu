@@ -73,12 +73,15 @@ public class BlockFluidTank extends HTUBlock implements ITileEntityProvider
 
     @Override
     @OnlyIn(Dist.CLIENT)
-    public void addInformation(ItemStack stack, @Nullable IBlockReader worldIn, List<ITextComponent> tooltip, ITooltipFlag flagIn) {
+    public void addInformation(ItemStack stack, @Nullable IBlockReader worldIn, List<ITextComponent> tooltip, ITooltipFlag flagIn)
+    {
         CompoundNBT data = stack.getTag();
 
         if(KeyboardHelper.isHoldingShift())
             if (data != null)
-                tooltip.add(new StringTextComponent("Fluid: ").append(new TranslationTextComponent(ModUtils.getFluidName(data)).setStyle(Style.EMPTY.setColor(Color.fromHex("#0000ff")))).append(new StringTextComponent(", "+data.getInt("Amount") + "mB")).setStyle(Style.EMPTY.setItalic(true)));
+                tooltip.add(new StringTextComponent("Fluid: ")
+                        .append(new TranslationTextComponent(ModUtils.getFluidName(data)).setStyle(Style.EMPTY.setColor(Color.fromHex("#0000ff"))))
+                        .append(new StringTextComponent(", "+data.getInt("Amount") + "mB")).setStyle(Style.EMPTY.setItalic(true)));
             else
                 tooltip.add(new TranslationTextComponent("htu.fluidtank.tooltip"));
         else

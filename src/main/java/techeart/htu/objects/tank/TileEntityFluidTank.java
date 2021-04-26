@@ -24,7 +24,7 @@ public class TileEntityFluidTank extends TileEntity
 {
     public static final int CAPACITY = 8000;
 
-    private float prevFluidAmount = 0;
+    private float prevFluidAmount = 0;    //Used for fluid level animated render
 
     private final FluidTank internalVolume = new FluidTank(CAPACITY)
     {
@@ -57,6 +57,8 @@ public class TileEntityFluidTank extends TileEntity
         return nbt;
     }
 
+    //TODO fix: errors on client (tileentity is null).
+    // It seems like tile isn't removing on server, when player breaks tank
     public void syncClient()
     {
         if(getWorld() == null) return;
@@ -131,6 +133,7 @@ public class TileEntityFluidTank extends TileEntity
     @Nonnull
     public FluidStack drain(int maxDrain, FluidAction action) { return internalVolume.drain(maxDrain, action); }
 
+    /**Used for fluid level animated render.*/
     public float getLerpedFluidAmount()
     {
         float result = MathHelper.lerp(0.1f, prevFluidAmount, internalVolume.getFluid().getAmount());

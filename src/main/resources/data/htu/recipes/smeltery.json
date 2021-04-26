@@ -7,6 +7,6 @@
     { "item": "htu:ingot_tin", "count": 1 }
   ],
   "tier": 0,
-  "time": 20,
+  "time": 60,
   "experience": 4.0
 }

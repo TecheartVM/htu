@@ -1,9 +1,6 @@
 package techeart.htu.objects.smeltery;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.ITileEntityProvider;
-import net.minecraft.block.SoundType;
+import net.minecraft.block.*;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -11,6 +8,7 @@ import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.inventory.InventoryHelper;
 import net.minecraft.inventory.container.INamedContainerProvider;
 import net.minecraft.item.BlockItemUseContext;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.particles.ParticleTypes;
 import net.minecraft.state.BooleanProperty;
@@ -28,6 +26,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.ToolType;
 import net.minecraftforge.fml.network.NetworkHooks;
+import techeart.htu.objects.TileEntityIgnitable;
 import techeart.htu.utils.HTUTileEntityType;
 import techeart.htu.utils.RegistryHandler;
 import techeart.htu.utils.registration.HTUBlock;
@@ -37,9 +36,7 @@ import java.util.Random;
 public class BlockSmeltery extends HTUBlock implements ITileEntityProvider
 {
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
-    public static final BooleanProperty LIT = BooleanProperty.create("lit");
-
-    private static boolean keepInventory;
+    public static final BooleanProperty LIT = BlockStateProperties.LIT;
 
     public BlockSmeltery()
     {
@@ -58,11 +55,7 @@ public class BlockSmeltery extends HTUBlock implements ITileEntityProvider
 
         if(!(tileEntity instanceof TileEntitySmeltery)) return;
 
-        keepInventory = true;
-
         world.setBlockState(pos, RegistryHandler.BLOCK_SMELTERY.get().getDefaultState().with(FACING, state.get(FACING)).with(LIT, active), 3);
-
-        keepInventory = false;
 
         if(tileEntity != null)
         {
@@ -79,16 +72,10 @@ public class BlockSmeltery extends HTUBlock implements ITileEntityProvider
     }
 
     @Override
-    public BlockState mirror(BlockState state, Mirror mirrorIn)
-    {
-        return state.rotate(mirrorIn.toRotation(state.get(FACING)));
-    }
+    public BlockState mirror(BlockState state, Mirror mirrorIn) { return state.rotate(mirrorIn.toRotation(state.get(FACING))); }
 
     @Override
-    public BlockState rotate(BlockState state, IWorld world, BlockPos pos, Rotation direction)
-    {
-        return state.with(FACING, direction.rotate(state.get(FACING)));
-    }
+    public BlockState rotate(BlockState state, IWorld world, BlockPos pos, Rotation direction) { return state.with(FACING, direction.rotate(state.get(FACING))); }
 
     @Override
     public int getLightValue(BlockState state, IBlockReader world, BlockPos pos)
@@ -97,10 +84,7 @@ public class BlockSmeltery extends HTUBlock implements ITileEntityProvider
     }
 
     @Override
-    public BlockState getStateForPlacement(BlockItemUseContext context)
-    {
-        return this.getDefaultState().with(FACING, context.getPlacementHorizontalFacing().getOpposite());
-    }
+    public BlockState getStateForPlacement(BlockItemUseContext context) { return this.getDefaultState().with(FACING, context.getPlacementHorizontalFacing().getOpposite()); }
 
     @Override
     public void onBlockPlacedBy(World worldIn, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack)
@@ -111,7 +95,7 @@ public class BlockSmeltery extends HTUBlock implements ITileEntityProvider
             TileEntity tileEntity = worldIn.getTileEntity(pos);
             if(tileEntity instanceof TileEntitySmeltery)
             {
-                ((TileEntitySmeltery)tileEntity).setCustomName(stack.getDisplayName());
+
             }
         }
     }
@@ -147,7 +131,7 @@ public class BlockSmeltery extends HTUBlock implements ITileEntityProvider
         if (stateIn.get(LIT))
         {
             double d0 = (double)pos.getX() + 0.5D;
-            double d1 = (double)pos.getY();
+            double d1 = pos.getY();
             double d2 = (double)pos.getZ() + 0.5D;
             if (rand.nextDouble() < 0.1D)
             {
@@ -156,7 +140,6 @@ public class BlockSmeltery extends HTUBlock implements ITileEntityProvider
 
             Direction direction = stateIn.get(FACING);
             Direction.Axis direction$axis = direction.getAxis();
-            double d3 = 0.52D;
             double d4 = rand.nextDouble() * 0.6D - 0.3D;
             double d5 = direction$axis == Direction.Axis.X ? (double)direction.getXOffset() * 0.52D : d4;
             double d6 = rand.nextDouble() * 6.0D / 16.0D;
@@ -174,6 +157,14 @@ public class BlockSmeltery extends HTUBlock implements ITileEntityProvider
             TileEntity tileEntity = worldIn.getTileEntity(pos);
             if(tileEntity instanceof TileEntitySmeltery)
             {
+                Item heldItem = player.getHeldItemMainhand().getItem();
+                if(TileEntityIgnitable.isIgnitionTool(heldItem))
+                {
+                    ((TileEntitySmeltery)tileEntity).ignite();
+                    worldIn.playSound(null, pos, SoundEvents.ITEM_FLINTANDSTEEL_USE, SoundCategory.BLOCKS, 1.0F, 1.0F);
+                    return ActionResultType.SUCCESS;
+                }
+
                 NetworkHooks.openGui((ServerPlayerEntity)player, (INamedContainerProvider)tileEntity, pos);
                 return ActionResultType.SUCCESS;
             }
@@ -196,6 +187,4 @@ public class BlockSmeltery extends HTUBlock implements ITileEntityProvider
             worldIn.removeTileEntity(pos);
         }
     }
-
-
 }

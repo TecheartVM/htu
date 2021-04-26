@@ -35,21 +35,20 @@ import java.util.Map;
 import java.util.Set;
 
 /* GLOBAL TODO LIST:
-* 1. FISH!
-* 2. Remake GRID System (+pipes)
-* 3. Create Gas (+Spreading algorithm)
-* 4. Clean up code
-* 5. Boiler:
-* 5.1 GUI + TankDrawingMethod
-* 5.2 TileEntity + Container perepisatNahuy!
-* 6. Fix furnace (everlasting burning)
-* 7. Pump animation + InputOutput system
-* 8. Smeltery (Fully rewrite)
-* 9. Tank (Rotating system + lock + output)
-* 10. Base classes
-* 11. Temperature system(s?)
-* 12. Universal bucket
-* */
+           1. FISH!
+           2. Remake GRID System (+pipes)
+           3. Create Gas (+Spreading algorithm)
+           4. Clean up code
+           5. Boiler:
+                5.1 GUI + TankDrawingMethod
+                5.2 TileEntity + Container perepisatNahuy!
+           6. Fix furnace (everlasting burning)
+           7. Pump animation + InputOutput system
+           8. Tank (Rotating system + lock + output)
+           9. Base classes
+           10. Temperature system(s?)
+           11. Universal bucket
+*/
 @Mod("htu")
 @Mod.EventBusSubscriber
 public class MainClass

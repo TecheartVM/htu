@@ -40,43 +40,8 @@ public class AlloyRecipe implements IRecipe<IInventory>
         this.experience = experience;
     }
 
-    public boolean isValid(ArrayList<ItemStack> input, int tier)
-    {
-        if(tier < this.tier) return false;
-
-        for (ItemStack required : ingredientsList)
-        {
-            boolean found = false;
-            for (ItemStack provided : input)
-            {
-                if(isItemStackValid(provided, required))
-                    found = true;
-            }
-            if(!found) return false;
-        }
-
-        return true;
-    }
-
-    public boolean isValid(int tier, NonNullList<ItemStack> inventory, int inputStartIndex, int inputSlotsCount)
-    {
-        if(tier < this.tier) return false;
-
-        for (ItemStack required : ingredientsList)
-        {
-            if(!InventoryHelper.takeStack(inventory, required, false, inputStartIndex, inputSlotsCount))
-            {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    public static boolean isItemStackValid(ItemStack comparedStack, ItemStack perfectStack)
-    {
-        return (comparedStack.getItem() == perfectStack.getItem()) && (comparedStack.getCount() >= perfectStack.getCount());
-    }
+    @Override
+    public boolean isDynamic() { return true; } //If true, this recipe does not appear in the recipe book
 
     @Override
     public boolean matches(IInventory inv, World worldIn) { return false; }
@@ -114,10 +79,7 @@ public class AlloyRecipe implements IRecipe<IInventory>
 
     private static class Serializer extends ForgeRegistryEntry<IRecipeSerializer<?>> implements IRecipeSerializer<AlloyRecipe>
     {
-        public Serializer()
-        {
-            setRegistryName(new ResourceLocation(MainClass.MODID, "alloying_recipe"));
-        }
+        public Serializer() { setRegistryName(new ResourceLocation(MainClass.MODID, "alloying_recipe")); }
 
         @Override
         public AlloyRecipe read(ResourceLocation recipeId, JsonObject json)
@@ -133,9 +95,7 @@ public class AlloyRecipe implements IRecipe<IInventory>
             {
                 element = JSONUtils.getJsonArray(json, "ingredients");
                 for (JsonElement item : element.getAsJsonArray())
-                {
                     ingredients.add(ShapedRecipe.deserializeItem(item.getAsJsonObject()));
-                }
             }
             else
             {
@@ -153,9 +113,7 @@ public class AlloyRecipe implements IRecipe<IInventory>
             ArrayList<ItemStack> ingredients = new ArrayList<>();
             int listLength = buffer.readVarInt();
             for (int i = 0; i < listLength; i++)
-            {
                 ingredients.add(buffer.readItemStack());
-            }
 
             ItemStack result = buffer.readItemStack();
 
@@ -171,9 +129,7 @@ public class AlloyRecipe implements IRecipe<IInventory>
         {
             buffer.writeVarInt(recipe.ingredientsList.size());
             for (ItemStack item: recipe.ingredientsList)
-            {
                 buffer.writeItemStack(item);
-            }
 
             buffer.writeItemStack(recipe.result);
 

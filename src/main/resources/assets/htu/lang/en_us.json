@@ -40,5 +40,5 @@
   "advancements.htu.secret.wip.desc": "Faster then devs!",
 
   "htu.moreinfo.tooltip": "Hold\u00A7e Shift\u00A77  for more information",
-  "htu.fluidtank.tooltip": "This tank can store only fluids"
+  "htu.fluidtank.tooltip": "Stores fluids. Retains content when broken."
 }
