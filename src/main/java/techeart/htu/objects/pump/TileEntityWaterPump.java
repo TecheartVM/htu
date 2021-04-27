@@ -1,51 +1,124 @@
 package techeart.htu.objects.pump;
 
+import net.minecraft.block.AirBlock;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.fluid.Fluid;
+import net.minecraft.fluid.FluidState;
 import net.minecraft.fluid.Fluids;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.ITickableTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Direction;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.LazyOptional;
+import net.minecraftforge.fluids.FluidAttributes;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler;
+import net.minecraftforge.fluids.capability.IFluidHandler.*;
 import techeart.htu.objects.HTUFluidTank;
+import techeart.htu.utils.CapabilityUtils;
 import techeart.htu.utils.HTUFluidHandler;
 import techeart.htu.utils.RegistryHandler;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.*;
 
-public class TileEntityWaterPump extends TileEntity implements ITickableTileEntity, IFluidHandler
+public class TileEntityWaterPump extends TileEntity implements ITickableTileEntity
 {
     protected static final int internalVolumeWater = 4000;
     protected static final int internalVolumeSteam = 4000;
-    protected static final int pumpRate = 10;
-    protected static final int steamConsumptionRate = 10;
+    protected static final int ejectionRate = 125;
+    protected static final int operationTime = 40;          //40 == 2 seconds
+    protected static final int steamConsumptionRate = 25;   //25 == 500 per second
+
+    protected static final int radius = 10;
 
     //fluid constant links
     private static final Fluid WATER = Fluids.WATER;
     private static final Fluid STEAM = RegistryHandler.FLUID_STEAM.get();
 
-    private final HTUFluidHandler fluidHandler;
-    private final LazyOptional<IFluidHandler> fluidCapWater;
-    private final LazyOptional<IFluidHandler> fluidCapSteam;
+    private final HTUFluidTank tankWater;
+    private final HTUFluidTank tankSteam;
 
     public TileEntityWaterPump()
     {
         super(RegistryHandler.WATER_PUMP_TE.get());
+        tankWater = new HTUFluidTank(internalVolumeWater, WATER, HTUFluidTank.Type.EJECT_ONLY);
+        tankSteam = new HTUFluidTank(internalVolumeSteam, STEAM, HTUFluidTank.Type.INSERT_ONLY);
+    }
 
-        fluidHandler = new HTUFluidHandler(
-                new HTUFluidTank(internalVolumeWater, WATER, HTUFluidTank.Type.EJECT_ONLY),
-                new HTUFluidTank(internalVolumeSteam, STEAM, HTUFluidTank.Type.INSERT_ONLY)
-        );
+    private IFluidHandler output = null;
+    public void updateConnections()
+    {
+        output = null;
+        if(world == null || isRemoved()) return;
 
-        fluidCapWater = LazyOptional.of(() -> fluidHandler.getTank(0));
-        fluidCapSteam = LazyOptional.of(() -> fluidHandler.getTank(1));
+        Direction pumpFace = BlockWaterPump.getFacing(getBlockState());
+        //output connection check
+        CapabilityUtils.getCapability(world, pos.offset(pumpFace.rotateYCCW()), CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, pumpFace.rotateY())
+                .ifPresent(handler -> output = handler);
+    }
+
+    private final LinkedHashSet<FluidPath> waterSources = new LinkedHashSet<>();
+    public void updateWaterSources(BlockPos firstSourcePos)
+    {
+        if(world == null || world.isRemote) return;
+
+        waterSources.clear();
+        FluidState f = world.getFluidState(firstSourcePos);
+        if(f.isEmpty() || f.getFluid() != WATER) return;
+
+        FluidPath initial = new FluidPath(world, firstSourcePos, null);
+        Set<FluidPath> curCheck = new HashSet<>();
+        Set<FluidPath> nextCheck = new HashSet<>();
+        curCheck.add(initial);
+
+        for (int i = 0; i < radius; i++)
+        {
+            nextCheck.clear();
+            for (FluidPath fp : curCheck)
+                for (FluidPath np : fp.getNext())
+                    if(!waterSources.contains(np))
+                        nextCheck.add(np);
+            curCheck.clear();
+            curCheck.addAll(nextCheck);
+            waterSources.addAll(nextCheck);
+        }
+    }
+
+    private int operationProgress = 0;
+    protected void suck()
+    {
+        if(tankWater.isFull())
+        {
+            operationProgress = 0;
+            return;
+        }
+
+        if(operationProgress < operationTime) operationProgress++;
+        else
+        {
+            if(consumeWaterSource())
+            {
+                tankWater.forceFill(new FluidStack(WATER, FluidAttributes.BUCKET_VOLUME), FluidAction.EXECUTE);
+            }
+            operationProgress = 0;
+        }
+    }
+
+    protected boolean consumeWaterSource()
+    {
+        if(world == null) return false;
+        updateWaterSources(pos.down());
+        if(waterSources.isEmpty()) return false;
+        //getting the last added source
+        BlockPos sourcePos = ((FluidPath) waterSources.toArray()[waterSources.size() - 1]).pos;
+        return world.setBlockState(sourcePos, Blocks.AIR.getDefaultState());
     }
 
     /*ITickableTileEntity*/
@@ -54,34 +127,20 @@ public class TileEntityWaterPump extends TileEntity implements ITickableTileEnti
     {
         if (!this.world.isRemote)
         {
-            if (this.world.getBlockState(this.pos.down()) == Blocks.WATER.getDefaultState())
-                fluidHandler.forceFill(new FluidStack(WATER, pumpRate), FluidAction.EXECUTE);
+            //ejecting sucked water if possible
+            if(output != null && !tankWater.isEmpty())
+                output.fill(tankWater.forceDrain(ejectionRate, IFluidHandler.FluidAction.EXECUTE), IFluidHandler.FluidAction.EXECUTE);
 
-            //TODO: optimization
-            int waterAmount = fluidHandler.getFluidInTank(0).getAmount();
-            if(waterAmount > 0)
-            {
-                for (Direction face : Direction.values())
-                {
-                    if(face != Direction.DOWN)
-                    {
-                        TileEntity tileEntity = world.getTileEntity(pos.offset(face));
-                        if(tileEntity != null)
-                        {
-                            LazyOptional<IFluidHandler> cap = tileEntity.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, face.getOpposite());
-                            if(cap.isPresent())
-                            {
-                                IFluidHandler fluidHandler = cap.orElse(null);
-                                if(fluidHandler != null)
-                                {
-                                    int toDrain = fluidHandler.fill(new FluidStack(WATER, waterAmount), FluidAction.EXECUTE);
-                                    drain(toDrain, FluidAction.EXECUTE);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+            //consuming steam, if is present, and do operation
+            suck();
+//            if(!tankSteam.isEmpty())
+//            {
+//                if(tankSteam.forceDrain(steamConsumptionRate, IFluidHandler.FluidAction.EXECUTE).getAmount() >= steamConsumptionRate)
+//                {
+//                    suck();
+//                }
+//                else operationProgress = 0;
+//            }
         }
     }
 
@@ -90,15 +149,17 @@ public class TileEntityWaterPump extends TileEntity implements ITickableTileEnti
     public void read(BlockState state, CompoundNBT nbt)
     {
         super.read(state, nbt);
-        this.fluidHandler.read(nbt);
+        tankWater.readFromNBT(nbt);
+        tankSteam.readFromNBT(nbt);
     }
 
     @Override
-    public CompoundNBT write(CompoundNBT compound)
+    public CompoundNBT write(CompoundNBT nbt)
     {
-        super.write(compound);
-        this.fluidHandler.write(compound);
-        return compound;
+        super.write(nbt);
+        tankWater.writeToNBT(nbt);
+        tankSteam.writeToNBT(nbt);
+        return nbt;
     }
 
     @Nonnull
@@ -106,9 +167,7 @@ public class TileEntityWaterPump extends TileEntity implements ITickableTileEnti
     public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> capability)
     {
         if (capability == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY)
-        {
-            return CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY.orEmpty(capability, fluidCapWater);
-        }
+            return CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY.orEmpty(capability, LazyOptional.of(() -> tankWater));
         return super.getCapability(capability);
     }
 
@@ -119,36 +178,48 @@ public class TileEntityWaterPump extends TileEntity implements ITickableTileEnti
         if (capability == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY)
         {
             Direction pumpFace = BlockWaterPump.getFacing(getBlockState());
+            //water port
             if(facing == pumpFace.rotateY())
-                return (LazyOptional<T>) fluidCapSteam;
+                return CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY.orEmpty(capability, LazyOptional.of(() -> tankWater));
+            //steam port
             if(facing == pumpFace.rotateYCCW())
-                return (LazyOptional<T>) fluidCapWater;
+                return CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY.orEmpty(capability, LazyOptional.of(() -> tankSteam));
         }
         return super.getCapability(capability, facing);
     }
 
-    /*IFluidHandler*/
-    @Override
-    public int getTanks() { return 2; }
-
+    /*tanks accessors*/
     @Nonnull
-    @Override
-    public FluidStack getFluidInTank(int tank) { return fluidHandler.getFluidInTank(tank); }
+    public FluidStack getFluidInTank(int tank) { return tank == 1 ? tankSteam.getFluid() : tankWater.getFluid(); }
 
-    @Override
-    public int getTankCapacity(int tank) { return fluidHandler.getTankCapacity(tank); }
+    /*fluid path*/
+    protected static class FluidPath
+    {
+        public World world;
+        public BlockPos pos;
+        public FluidPath prev;
 
-    @Override
-    public boolean isFluidValid(int tank, @Nonnull FluidStack stack) { return fluidHandler.isFluidValid(tank, stack); }
+        public FluidPath(World world, BlockPos pos, FluidPath prev)
+        {
+            this.world = world;
+            this.pos = pos;
+            this.prev = prev;
+        }
 
-    @Override
-    public int fill(FluidStack resource, FluidAction action) { return fluidHandler.fill(resource, action); }
-
-    @Nonnull
-    @Override
-    public FluidStack drain(FluidStack resource, FluidAction action) { return drain(resource, action); }
-
-    @Nonnull
-    @Override
-    public FluidStack drain(int maxDrain, FluidAction action) { return fluidHandler.getTank(0).drain(maxDrain, action); }
+        public Set<FluidPath> getNext()
+        {
+            Fluid f = world.getFluidState(pos).getFluid();
+            Set<FluidPath> result = new HashSet<>();
+            Direction checkDir = Direction.NORTH;
+            for (int i = 0; i < 4; i++)
+            {
+                BlockPos newPos = pos.offset(checkDir);
+                FluidState fs = world.getFluidState(newPos);
+                if(!fs.isEmpty() && fs.isSource() && fs.getFluid() == f)
+                    result.add(new FluidPath(world, newPos, this));
+                checkDir = checkDir.rotateY();
+            }
+            return result;
+        }
+    }
 }

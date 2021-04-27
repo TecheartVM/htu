@@ -3,8 +3,10 @@ package techeart.htu.objects.pump;
 import com.google.common.collect.Maps;
 import net.minecraft.block.*;
 import net.minecraft.block.material.Material;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.BlockItemUseContext;
+import net.minecraft.item.ItemStack;
 import net.minecraft.state.DirectionProperty;
 import net.minecraft.state.StateContainer;
 import net.minecraft.tileentity.TileEntity;
@@ -16,8 +18,12 @@ import net.minecraft.util.math.shapes.ISelectionContext;
 import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.util.math.shapes.VoxelShapes;
 import net.minecraft.world.IBlockReader;
+import net.minecraft.world.IWorld;
+import net.minecraft.world.IWorldReader;
 import net.minecraft.world.World;
 import net.minecraftforge.common.ToolType;
+import techeart.htu.objects.pipe.TileEntityPipeFluid;
+import techeart.htu.utils.ModUtils;
 import techeart.htu.utils.RegistryHandler;
 import techeart.htu.utils.registration.HTUBlock;
 
@@ -60,12 +66,33 @@ public class BlockWaterPump extends HTUBlock implements ITileEntityProvider
     @Override
     public ActionResultType onBlockActivated(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand handIn, BlockRayTraceResult hit)
     {
-        if(!world.isRemote && world.getTileEntity(pos) instanceof TileEntityWaterPump)
+        TileEntity te = world.getTileEntity(pos);
+        if(!world.isRemote && te instanceof TileEntityWaterPump)
         {
-            System.out.println("Water amount: " + ((TileEntityWaterPump) world.getTileEntity(pos)).getFluidInTank(0).getAmount());
-            System.out.println("Steam amount: " + ((TileEntityWaterPump) world.getTileEntity(pos)).getFluidInTank(1).getAmount());
+            ModUtils.playerInfoMessage("Steam: " + ((TileEntityWaterPump) te).getFluidInTank(1).getAmount() +
+                    "mB, Water: " + ((TileEntityWaterPump)te).getFluidInTank(0).getAmount() + "mB", player);
         }
         return super.onBlockActivated(state, world, pos, player, handIn, hit);
+    }
+
+    @Override
+    public void onBlockPlacedBy(World worldIn, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack)
+    {
+        super.onBlockPlacedBy(worldIn, pos, state, placer, stack);
+        if(worldIn.isRemote) return;
+        TileEntity te = worldIn.getTileEntity(pos);
+        if(te instanceof TileEntityWaterPump) ((TileEntityWaterPump)te).updateConnections();
+    }
+
+    @Override
+    public BlockState updatePostPlacement(BlockState stateIn, Direction facing, BlockState facingState, IWorld worldIn, BlockPos currentPos, BlockPos facingPos)
+    {
+        if(!worldIn.isRemote())
+        {
+            TileEntity te = worldIn.getTileEntity(currentPos);
+            if(te instanceof TileEntityWaterPump) ((TileEntityWaterPump)te).updateConnections();
+        }
+        return super.updatePostPlacement(stateIn, facing, facingState, worldIn, currentPos, facingPos);
     }
 
     @Nullable

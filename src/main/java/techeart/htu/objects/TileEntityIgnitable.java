@@ -32,7 +32,6 @@ public abstract class TileEntityIgnitable extends TileEntity
             ignited = value;
             if(value) onIgnited();
             else onExtinguished();
-            //System.out.println("COCK");
             return true;
         }
         return false;

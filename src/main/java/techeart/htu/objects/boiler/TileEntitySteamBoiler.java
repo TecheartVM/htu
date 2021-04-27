@@ -30,8 +30,10 @@ import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler;
+import net.minecraftforge.fluids.capability.IFluidHandler.FluidAction;
 import techeart.htu.MainClass;
 import techeart.htu.objects.HTUFluidTank;
+import techeart.htu.objects.TileEntityIgnitable;
 import techeart.htu.utils.FuelTemperatures;
 import techeart.htu.utils.HTUFluidHandler;
 import techeart.htu.utils.HTUHooks;
@@ -41,8 +43,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Random;
 
-//it was TileEntity not Abstract...
-public class TileEntitySteamBoiler extends TileEntity implements IInventory, INamedContainerProvider, ITickableTileEntity, IFluidHandler
+public class TileEntitySteamBoiler extends TileEntityIgnitable implements IInventory, INamedContainerProvider, ITickableTileEntity
 {
     private Random random = new Random();
 
@@ -51,11 +52,11 @@ public class TileEntitySteamBoiler extends TileEntity implements IInventory, INa
     public static final int internalVolumeSteam = 4000;
 
     //temperature constants
-    public static final int maxTemperature = 1200;
+    public static final int maxTemperature = 120;
     public static final int minTemperature = -30;
     public static final int conversionTemperature = 100;
 
-    //pressure constants *10
+    //pressure constants
     public static final int maxPressure = 640;
     public static final int initialPressure = 40;
     public static final int ejectionPressure = 560;
@@ -78,7 +79,8 @@ public class TileEntitySteamBoiler extends TileEntity implements IInventory, INa
     public static final int EXTINCTION_CHANCE = 5;
 
     private boolean ignited = false;
-    protected void setIgnited(boolean value)
+    @Override
+    protected boolean setIgnited(boolean value)
     {
         if(ignited != value)
         {
@@ -86,6 +88,7 @@ public class TileEntitySteamBoiler extends TileEntity implements IInventory, INa
             this.world.setBlockState(this.pos, this.world.getBlockState(this.pos).with(AbstractFurnaceBlock.LIT, this.isBurning()), 3);
             markDirty();
         }
+        return false;
     }
 
     private ITextComponent customName;
@@ -226,6 +229,7 @@ public class TileEntitySteamBoiler extends TileEntity implements IInventory, INa
 //        System.out.println("Can eject steam: " + canEjectSteam);
     }
 
+    @Override
     public void ignite()
     {
         if(!world.isRemote)
@@ -256,7 +260,17 @@ public class TileEntitySteamBoiler extends TileEntity implements IInventory, INa
         }
     }
 
+    @Override
+    protected void onIgnited() { }
 
+    @Override
+    protected void tickIgnition()
+    {
+
+    }
+
+    @Override
+    protected void onExtinguished() { }
 
     public int getFluidAmount(int index)
     {
@@ -271,8 +285,6 @@ public class TileEntitySteamBoiler extends TileEntity implements IInventory, INa
         {
             if (this.world.isRemote)
                 world.addParticle(ParticleTypes.CLOUD, this.pos.getX() + 0.5D, this.pos.getY() + 1, this.pos.getZ() + 0.5D, 0, 0.2D, 0);
-
-
             return true;
         }
         return false;
@@ -452,7 +464,6 @@ public class TileEntitySteamBoiler extends TileEntity implements IInventory, INa
         return this.customName != null ? this.customName : this.getDefaultName();
     }
 
-    @Override
     public int fill(FluidStack resource, FluidAction action)
     {
         //System.out.println("Filling");
@@ -467,7 +478,6 @@ public class TileEntitySteamBoiler extends TileEntity implements IInventory, INa
     }
 
     @Nullable
-    @Override
     public FluidStack drain(FluidStack resource, FluidAction action)
     {
         FluidStack res = fluidHandler.drain(resource, action);
@@ -481,7 +491,6 @@ public class TileEntitySteamBoiler extends TileEntity implements IInventory, INa
     }
 
     @Nullable
-    @Override
     public FluidStack drain(int maxDrain, FluidAction action)
     {
         FluidStack res = fluidHandler.drain(STEAM, maxDrain, action);
@@ -493,23 +502,19 @@ public class TileEntitySteamBoiler extends TileEntity implements IInventory, INa
         return res;
     }
 
-    @Override
     public int getTanks() {
         return fluidHandler.getTanks();
     }
 
     @Nonnull
-    @Override
     public FluidStack getFluidInTank(int tank) {
         return fluidHandler.getFluidInTank(tank);
     }
 
-    @Override
     public int getTankCapacity(int tank) {
         return fluidHandler.getTankCapacity(tank);
     }
 
-    @Override
     public boolean isFluidValid(int tank, @Nonnull FluidStack stack) {
         return fluidHandler.isFluidValid(tank, stack);
     }
@@ -526,7 +531,7 @@ public class TileEntitySteamBoiler extends TileEntity implements IInventory, INa
     {
         if (capability == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY)
         {
-            return CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY.orEmpty(capability, LazyOptional.of(() -> this));
+            return CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY.orEmpty(capability, LazyOptional.of(() -> fluidHandler));
         }
         return super.getCapability(capability);
     }
@@ -537,7 +542,7 @@ public class TileEntitySteamBoiler extends TileEntity implements IInventory, INa
     {
         if (capability == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY && facing != Direction.DOWN)
         {
-            return CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY.orEmpty(capability, LazyOptional.of(() -> this));
+            return CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY.orEmpty(capability, LazyOptional.of(() -> fluidHandler));
         }
         return super.getCapability(capability, facing);
     }

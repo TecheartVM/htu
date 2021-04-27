@@ -42,8 +42,8 @@ import java.util.Set;
            3. Create Gas (+Spreading algorithm)
            4. Clean up code
            5. Create GUI draw helper
-           6. Pump animation + InputOutput system
-           7. Tank (Rotating system + lock + stacking)
+           6. Pump animation + InputOutput system + New working algorithm
+           7. Tank (Rotating + locking + stacking)
            8. Base classes
            9. Temperature system(s?)
            10. Universal bucket
