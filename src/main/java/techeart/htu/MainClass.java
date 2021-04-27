@@ -43,7 +43,7 @@ import java.util.Set;
            4. Clean up code
            5. Create GUI draw helper
            6. Pump animation + InputOutput system
-           7. Tank (Rotating system + lock + output + fixes)
+           7. Tank (Rotating system + lock + stacking)
            8. Base classes
            9. Temperature system(s?)
            10. Universal bucket

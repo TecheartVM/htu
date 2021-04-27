@@ -31,6 +31,7 @@ import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler.FluidAction;
 import net.minecraftforge.fluids.capability.IFluidHandlerItem;
+import techeart.htu.utils.ColorConstants;
 import techeart.htu.utils.KeyboardHelper;
 import techeart.htu.utils.ModUtils;
 import techeart.htu.utils.RegistryHandler;
@@ -93,30 +94,16 @@ public class BlockFluidTank extends HTUBlock implements ITileEntityProvider
             if (data != null)
             {
                 Fluid fluid = FluidStack.loadFluidStackFromNBT(data).getFluid();
-                InputStream is;
-                BufferedImage image;
-                int fluidColor = 248572;
-                try
-                {
-                    ResourceLocation fluidRes = fluid.getAttributes().getStillTexture();
-                    is = Minecraft.getInstance().getResourceManager().getResource(
-                            new ResourceLocation(fluidRes.getNamespace(), "textures/" + fluidRes.getPath() + ".png")
-                    ).getInputStream();
-                    image = ImageIO.read(is);
-                    fluidColor = image.getRGB(0, 0);
-                    //TODO apply fluid overlay color to texture color
-                }
-                catch(Exception e){
-                    //e.printStackTrace();
-                }
-
-                System.out.println(fluidColor);
+                Color textColor;
+                int color = ModUtils.getFluidTextureColor(fluid, 0, 0);
+                if(color == 0) textColor = ColorConstants.DESCRIPTION_FLUID_NAME_DEFAULT;
+                else textColor = Color.fromInt(color);
 
                 tooltip.add(new StringTextComponent("Fluid: ")
-                        .append(new TranslationTextComponent(ModUtils.getFluidName(data)).setStyle(Style.EMPTY.setColor(Color.fromInt(fluidColor))))//.fromHex("#03cafc"))))
+                        .append(new TranslationTextComponent(ModUtils.getFluidName(data)).setStyle(Style.EMPTY.setColor(textColor)))
                         .append(new StringTextComponent(", " + data.getInt("Amount") + "mB")).setStyle(Style.EMPTY.setItalic(true)));
             }
-            else tooltip.add(new TranslationTextComponent("htu.fluidtank.tooltip"));
+            else tooltip.add(new TranslationTextComponent("htu.fluidtank.tooltip").setStyle(Style.EMPTY.setColor(ColorConstants.DESCRIPTION_TEXT_NORMAL)));
         }
         else tooltip.add(new TranslationTextComponent("htu.moreinfo.tooltip"));
 
@@ -129,7 +116,6 @@ public class BlockFluidTank extends HTUBlock implements ITileEntityProvider
         TileEntity te = world.getTileEntity(pos);
         if(!(te instanceof TileEntityFluidTank)) return 0;
         TileEntityFluidTank tankTile = ((TileEntityFluidTank)te);
-        if(tankTile == null) return 0;
         FluidStack fluid = tankTile.getFluid();
         if(fluid.isEmpty()) return 0;
         return Math.max(fluid.getFluid().getAttributes().getLuminosity(), super.getLightValue(state, world, pos));
@@ -201,10 +187,7 @@ public class BlockFluidTank extends HTUBlock implements ITileEntityProvider
 
                     //if tank became empty, the light must be updated
                     if(tankTile.isEmpty())
-                    {
-                        world.getChunkProvider().getLightManager().checkBlock(pos);
-                        world.addBlockEvent(pos, this, 1, 1);
-                    }
+                        updateLight(world, pos);
                 }
                 else
                 {
@@ -219,16 +202,19 @@ public class BlockFluidTank extends HTUBlock implements ITileEntityProvider
 
                     //if tank got new fluid, the light must be updated
                     if(wasEmpty && !tankTile.isEmpty())
-                    {
-                        world.getChunkProvider().getLightManager().checkBlock(pos);
-                        world.addBlockEvent(pos, this, 1, 1);
-                    }
+                        updateLight(world, pos);
                 }
                 world.playSound(null, pos,sound, SoundCategory.BLOCKS, 1.0F, 1.0F);
                 return ActionResultType.SUCCESS;
             }
         }
         return ActionResultType.SUCCESS;
+    }
+
+    protected void updateLight(World world, BlockPos pos)
+    {
+        world.getChunkProvider().getLightManager().checkBlock(pos);
+        world.addBlockEvent(pos, this, 1, 1);
     }
 
     @Override
@@ -255,6 +241,7 @@ public class BlockFluidTank extends HTUBlock implements ITileEntityProvider
             FluidStack f = FluidStack.loadFluidStackFromNBT(stack.getTag());
             tileEntity.fill(f, FluidAction.EXECUTE);
         }
+        if(tileEntity != null && !tileEntity.isEmpty()) updateLight(worldIn, pos);
     }
 
     @Nullable
