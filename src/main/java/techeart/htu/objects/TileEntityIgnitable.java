@@ -1,9 +1,13 @@
 package techeart.htu.objects;
 
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityType;
+import net.minecraft.util.SoundCategory;
+import net.minecraft.util.SoundEvents;
+import techeart.htu.objects.boiler.TileEntitySteamBoiler;
 
 import java.util.HashSet;
 import java.util.Random;
@@ -17,6 +21,17 @@ public abstract class TileEntityIgnitable extends TileEntity
         IGNITION_TOOLS.add(Items.FLINT_AND_STEEL);
     }
     public static boolean isIgnitionTool(Item item) { return IGNITION_TOOLS.contains(item); }
+
+    public static boolean interactWithIgnitable(TileEntityIgnitable tile, ItemStack heldItem)
+    {
+        if(TileEntityIgnitable.isIgnitionTool(heldItem.getItem()))
+        {
+            tile.world.playSound(null, tile.pos, SoundEvents.ITEM_FLINTANDSTEEL_USE, SoundCategory.BLOCKS, 1.0F, 1.0F);
+            tile.ignite();
+            return true;
+        }
+        return false;
+    }
 
     public TileEntityIgnitable(TileEntityType<?> tileEntityTypeIn) { super(tileEntityTypeIn); }
 

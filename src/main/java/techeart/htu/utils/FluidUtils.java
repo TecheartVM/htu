@@ -2,8 +2,6 @@ package techeart.htu.utils;
 
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Hand;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
@@ -19,10 +17,10 @@ public class FluidUtils
     //TODO FluidStack info string static getter
 
     /**Handles tank interaction. Returns true if tank state was changed.*/
-    public static boolean interactWithTank(PlayerEntity player, Hand handIn, ItemStack heldItem, IFluidHandler tankFluidHandler, int tankIndex)
+    public static TankInteractionResult interactWithTank(PlayerEntity player, Hand handIn, ItemStack heldItem, IFluidHandler tankFluidHandler, int tankIndex)
     {
         LazyOptional<IFluidHandlerItem> lo = new ItemStack(heldItem.getItem(),1).getCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY);
-        if(!lo.isPresent()) return false;
+        if(!lo.isPresent()) return TankInteractionResult.NO_ITEM;
         IFluidHandlerItem itemFluidHandler = lo.orElse(null);
 
         FluidStack fluidInItem;
@@ -42,14 +40,14 @@ public class FluidUtils
         {
             //if draining with max value of integer isn't empty, this means that the item cannot be partially emptied (like vanilla bucket).
             if(!itemFluidHandler.drain(new FluidStack(fluidInTank, Integer.MAX_VALUE), FluidAction.SIMULATE).isEmpty())
-                return false;
+                return TankInteractionResult.FAILED;
 
             //Ok, this item doesn't have any fluid (fill item + drain tank)
 
             //check if we can fill item with tank fluid
             int filled = itemFluidHandler.fill(fluidInTank, player.isCreative() ? FluidAction.SIMULATE : FluidAction.EXECUTE);
             //if can't, do nothing
-            if(filled <= 0) return false;
+            if(filled <= 0) return TankInteractionResult.FAILED;
             //if can, drain tank and fill item with drained fluid
             SoundEvent sound = tankFluidHandler.drain(new FluidStack(fluidInTank, filled), FluidAction.EXECUTE).getFluid().getAttributes().getFillSound();
 
@@ -58,7 +56,7 @@ public class FluidUtils
             player.world.playSound(null, player.getPosition(), sound, SoundCategory.BLOCKS, 1.0F, 1.0F);
 
             //if tank became empty so it changed state
-            if(tankFluidHandler.getFluidInTank(tankIndex).isEmpty()) return true;
+            if(tankFluidHandler.getFluidInTank(tankIndex).isEmpty()) return TankInteractionResult.UPDATED;
         }
         else
         {
@@ -76,8 +74,21 @@ public class FluidUtils
             player.world.playSound(null, player.getPosition(), sound, SoundCategory.BLOCKS, 1.0F, 1.0F);
 
             //tank got new fluid so it changed state
-            if(wasEmpty && !tankFluidHandler.getFluidInTank(tankIndex).isEmpty()) return true;
+            if(wasEmpty && !tankFluidHandler.getFluidInTank(tankIndex).isEmpty()) return TankInteractionResult.UPDATED;
         }
-        return false;
+        System.out.println("Fluid in tank now is: " + tankFluidHandler.getFluidInTank(tankIndex).getAmount());
+        return TankInteractionResult.SUCCESS;
+    }
+
+    public enum TankInteractionResult
+    {
+        NO_ITEM,
+        FAILED,
+        SUCCESS,
+        UPDATED;
+
+        public boolean itemValid() { return this != NO_ITEM; }
+        public boolean success() { return this == SUCCESS || this == UPDATED; }
+        public boolean updated() { return this == UPDATED; }
     }
 }

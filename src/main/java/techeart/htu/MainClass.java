@@ -39,7 +39,7 @@ import java.util.Set;
 /* GLOBAL TODO LIST:
            1. FISH!
            2. Remake GRID System (+pipes)
-           3. Create Gas (+Spreading algorithm)
+           3. Create Gas
            4. Clean up code
            5. Create GUI draw helper
            6. Pump animation + InputOutput system + New working algorithm

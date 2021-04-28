@@ -27,11 +27,15 @@ import net.minecraft.world.World;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.ToolType;
+import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler;
+import net.minecraftforge.fluids.capability.IFluidHandlerItem;
 import net.minecraftforge.fml.network.NetworkHooks;
 import net.minecraftforge.registries.ForgeRegistries;
 import techeart.htu.objects.TileEntityIgnitable;
+import techeart.htu.utils.FluidUtils;
 import techeart.htu.utils.RegistryHandler;
 import techeart.htu.utils.registration.HTUBlock;
 
@@ -93,6 +97,60 @@ public class BlockSteamBoiler extends HTUBlock implements ITileEntityProvider
         }
     }
 
+    @Override
+    public boolean eventReceived(BlockState state, World worldIn, BlockPos pos, int id, int param)
+    {
+        if(id == 0)
+        {
+            worldIn.addParticle(ParticleTypes.CLOUD, pos.getX() + 0.5D, pos.getY() + 2.0D, pos.getZ() + 0.5D, 0.0D, 0.2D, 0.0D);
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public ActionResultType onBlockActivated(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockRayTraceResult hit)
+    {
+        if(!world.isRemote)
+        {
+            TileEntity tileEntity = world.getTileEntity(pos);
+            ItemStack heldItem = player.getHeldItemMainhand();
+            if(!(tileEntity instanceof TileEntitySteamBoiler)) return ActionResultType.SUCCESS;
+
+            LazyOptional<IFluidHandler> lo = tileEntity.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY);
+            if(lo.isPresent() && FluidUtils.interactWithTank(player, hand, heldItem, lo.orElse(null), 0).itemValid())
+            {
+
+            }
+            else if(!TileEntityIgnitable.interactWithIgnitable((TileEntityIgnitable) tileEntity, heldItem))
+                NetworkHooks.openGui((ServerPlayerEntity)player, (INamedContainerProvider)tileEntity, pos);
+        }
+        return ActionResultType.SUCCESS;
+    }
+
+    @Override
+    public void onReplaced(BlockState state, World world, BlockPos pos, BlockState newState, boolean isMoving)
+    {
+        if(newState.getBlock() instanceof BlockSteamBoiler) return;
+
+        //drop inventory items
+        TileEntity tileEntity = world.getTileEntity(pos);
+        if(tileEntity instanceof TileEntitySteamBoiler)
+            if(newState.getBlock() != state.getBlock())
+                InventoryHelper.dropInventoryItems(world, pos, (TileEntitySteamBoiler)tileEntity);
+        //remove tileentity
+        if(state.hasTileEntity() && state.getBlock() != newState.getBlock())
+            world.removeTileEntity(pos);
+        //remove boiler top
+        BlockState blockAbove = world.getBlockState(pos.up());
+        if(blockAbove.getBlock() == RegistryHandler.BLOCK_STEAM_BOILER_TOP.get())
+            world.setBlockState(pos.up(), Blocks.AIR.getDefaultState());
+    }
+
+    @Nullable
+    @Override
+    public TileEntity createNewTileEntity(IBlockReader worldIn) { return RegistryHandler.STEAM_BOILER_TE.get().create(); }
+
     @OnlyIn(Dist.CLIENT)
     @Override
     public void animateTick(BlockState stateIn, World worldIn, BlockPos pos, Random rand)
@@ -114,69 +172,5 @@ public class BlockSteamBoiler extends HTUBlock implements ITileEntityProvider
             worldIn.addParticle(ParticleTypes.SMOKE, d0 + d5, d1 + d6, d2 + d7, 0.0D, 0.0D, 0.0D);
             worldIn.addParticle(ParticleTypes.FLAME, d0 + d5, d1 + d6, d2 + d7, 0.0D, 0.0D, 0.0D);
         }
-    }
-
-    @Override
-    public boolean eventReceived(BlockState state, World worldIn, BlockPos pos, int id, int param)
-    {
-        if(id == 0)
-        {
-            worldIn.addParticle(ParticleTypes.CLOUD, pos.getX() + 0.5D, pos.getY() + 2.0D, pos.getZ() + 0.5D, 0.0D, 0.2D, 0.0D);
-            return true;
-        }
-        return false;
-    }
-
-    @Override
-    public ActionResultType onBlockActivated(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockRayTraceResult hit)
-    {
-        if(!world.isRemote)
-        {
-            TileEntity tileEntity = world.getTileEntity(pos);
-            Item heldItem = player.getHeldItemMainhand().getItem();
-            if(!(tileEntity instanceof TileEntitySteamBoiler)) return ActionResultType.SUCCESS;
-
-            if(heldItem.equals(Items.WATER_BUCKET) && player.getHeldItemMainhand().getCount() == 1)
-            {
-                if (((TileEntitySteamBoiler) world.getTileEntity(pos)).fill(new FluidStack(Fluids.WATER, 1000), IFluidHandler.FluidAction.EXECUTE) != 0)
-                {
-                    world.playSound(null, pos, SoundEvents.ITEM_BUCKET_EMPTY, SoundCategory.BLOCKS, 1.0F, 1.0F);
-                    if (!player.isCreative()) player.setHeldItem(Hand.MAIN_HAND, new ItemStack(Items.BUCKET, 1));
-                }
-            }
-            else
-            {
-                if(TileEntityIgnitable.isIgnitionTool(heldItem))
-                {
-                    world.playSound(null, pos, SoundEvents.ITEM_FLINTANDSTEEL_USE, SoundCategory.BLOCKS, 1.0F, 1.0F);
-                    ((TileEntitySteamBoiler) tileEntity).ignite();
-                }
-                else NetworkHooks.openGui((ServerPlayerEntity)player, (INamedContainerProvider)tileEntity, pos);
-            }
-        }
-        return ActionResultType.SUCCESS;
-    }
-
-    @Nullable
-    @Override
-    public TileEntity createNewTileEntity(IBlockReader worldIn) { return RegistryHandler.STEAM_BOILER_TE.get().create(); }
-
-    @Override
-    public void onReplaced(BlockState state, World world, BlockPos pos, BlockState newState, boolean isMoving)
-    {
-        if(newState.getBlock() instanceof BlockSteamBoiler) return;
-
-        //drop inventory items
-        TileEntity tileEntity = world.getTileEntity(pos);
-        if(tileEntity instanceof TileEntitySteamBoiler)
-            if(newState.getBlock() != state.getBlock())
-                InventoryHelper.dropInventoryItems(world, pos, (TileEntitySteamBoiler)tileEntity);
-        //remove tileentity
-        if(state.hasTileEntity() && state.getBlock() != newState.getBlock())
-            world.removeTileEntity(pos);
-        //remove boiler top
-        BlockState blockAbove = world.getBlockState(pos.up());
-        if(blockAbove.getBlock() == RegistryHandler.BLOCK_STEAM_BOILER_TOP.get())
-            world.setBlockState(pos.up(), Blocks.AIR.getDefaultState());
     }
 }

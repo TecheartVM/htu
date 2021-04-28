@@ -129,88 +129,29 @@ public class BlockFluidTank extends HTUBlock implements ITileEntityProvider
     @Override
     public ActionResultType onBlockActivated(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand handIn, BlockRayTraceResult hit)
     {
-        //TODO: add vanilla bottles support
-        //       + Rethink about _ActionResultType_
-        //       + move tank tile interaction code to the separate method
-        //       + add the fish feature :)
-
-        if(world.isRemote || player.isSneaking()) return ActionResultType.SUCCESS;
+        //TODO add vanilla bottles support..?
+        if(world.isRemote) return  ActionResultType.CONSUME;
+        if(player.isSneaking()) return ActionResultType.PASS;
         if(world.getTileEntity(pos) instanceof TileEntityFluidTank)
         {
             TileEntityFluidTank tankTile = ((TileEntityFluidTank) world.getTileEntity(pos));
-            if(tankTile == null) return ActionResultType.SUCCESS;
 
             ItemStack heldItem = player.getHeldItem(handIn);
             if (heldItem.isEmpty())
-            {
                 ModUtils.playerInfoMessage("Fluid in tank: " + tankTile.getFluid().getAmount()+"mB",player);
-                return ActionResultType.SUCCESS;
-            }
 
             /*~~~~~ACHIEVEMENT~~~~~*/
-            if(heldItem.getItem() == Items.PUFFERFISH_BUCKET ||heldItem.getItem() == Items.COD_BUCKET || heldItem.getItem() == Items.SALMON_BUCKET|| heldItem.getItem() == Items.TROPICAL_FISH_BUCKET )
-                ModUtils.unlockAdvancement(player,"secret/wip");
-            /*~~~~~ACHIEVEMENT~~~~~*/
+            if(heldItem.getItem() == Items.PUFFERFISH_BUCKET
+                    || heldItem.getItem() == Items.COD_BUCKET
+                    || heldItem.getItem() == Items.SALMON_BUCKET
+                    || heldItem.getItem() == Items.TROPICAL_FISH_BUCKET
+            ) ModUtils.unlockAdvancement(player,"secret/wip");
+            /*~~~~~END ACHIEVEMENT~~~~~*/
 
             //handling tank interaction
             LazyOptional<IFluidHandler> lo = tankTile.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY);
-            if(lo.isPresent() && FluidUtils.interactWithTank(player, handIn, heldItem, lo.orElse(null), 0))
+            if(lo.isPresent() && FluidUtils.interactWithTank(player, handIn, heldItem, lo.orElse(null), 0).updated())
                 updateLight(world, pos);
-            /*old tank interaction code*/
-//            IFluidHandlerItem itemFluidHandler = new ItemStack(heldItem.getItem(),1).getCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY).orElse(null);
-//
-//            if (itemFluidHandler != null)
-//            {
-//                SoundEvent sound;
-//
-//                FluidStack fluidInItem;
-//
-//                //if tank is empty, trying to determine fluid in item stack. Else check amount of the required fluid.
-//                if(tankTile.isEmpty())
-//                    fluidInItem = itemFluidHandler.drain(tankTile.getCapacity(), FluidAction.SIMULATE);
-//                else
-//                    fluidInItem = itemFluidHandler.drain(new FluidStack(tankTile.getFluid(), tankTile.getCapacity() - tankTile.getFluid().getAmount()), FluidAction.SIMULATE);
-//
-//                //All systems operable. Lets rock!
-//                if(fluidInItem.isEmpty())
-//                {
-//                    //if draining with max value of integer isn't empty, this means that the item cannot be partially emptied (like vanilla bucket).
-//                    if(!itemFluidHandler.drain(new FluidStack(tankTile.getFluid(), Integer.MAX_VALUE), FluidAction.SIMULATE).isEmpty())
-//                        return ActionResultType.SUCCESS;
-//
-//                    //Ok, this item doesn't have any fluid (fill item + drain tank)
-//
-//                    //check if we can fill item with tank fluid
-//                    int filled = itemFluidHandler.fill(tankTile.getFluid(), player.isCreative() ? FluidAction.SIMULATE : FluidAction.EXECUTE);
-//                    //if can't, do nothing
-//                    if(filled <= 0) return ActionResultType.SUCCESS;
-//                    //if can, drain tank and fill item with drained fluid (and save soundEvent ;) )
-//                    sound = tankTile.drain(new FluidStack(tankTile.getFluid(), filled), FluidAction.EXECUTE).getFluid().getAttributes().getFillSound();
-//
-//                    ModUtils.addItemToPlayer(player,handIn,1,new ItemStack(itemFluidHandler.getContainer().getItem(), 1));
-//
-//                    //if tank became empty, the light must be updated
-//                    if(tankTile.isEmpty())
-//                        updateLight(world, pos);
-//                }
-//                else
-//                {
-//                    boolean wasEmpty = tankTile.isEmpty();
-//
-//                    //It seems like this item have suitable fluid... Lets fill tank! (fill tank + drain item)
-//                    int filled = tankTile.fill(fluidInItem, FluidAction.EXECUTE);
-//                    sound  = itemFluidHandler.drain(new FluidStack(fluidInItem, filled), player.isCreative() ? FluidAction.SIMULATE : FluidAction.EXECUTE)
-//                            .getFluid().getAttributes().getEmptySound();
-//
-//                    ModUtils.addItemToPlayer(player,handIn,1,new ItemStack(itemFluidHandler.getContainer().getItem(), 1));
-//
-//                    //if tank got new fluid, the light must be updated
-//                    if(wasEmpty && !tankTile.isEmpty())
-//                        updateLight(world, pos);
-//                }
-//                world.playSound(null, pos,sound, SoundCategory.BLOCKS, 1.0F, 1.0F);
-//                return ActionResultType.SUCCESS;
-//            }
         }
         return ActionResultType.SUCCESS;
     }

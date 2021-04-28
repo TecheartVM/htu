@@ -1,13 +1,11 @@
 package techeart.htu.objects.boiler;
 
-import net.minecraft.block.AbstractFurnaceBlock;
 import net.minecraft.block.BlockState;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.fluid.Fluids;
-import net.minecraft.inventory.IInventory;
+import net.minecraft.inventory.ISidedInventory;
 import net.minecraft.inventory.ItemStackHelper;
 import net.minecraft.inventory.container.Container;
 import net.minecraft.inventory.container.INamedContainerProvider;
@@ -16,26 +14,19 @@ import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SUpdateTileEntityPacket;
 import net.minecraft.particles.ParticleTypes;
+import net.minecraft.state.properties.BlockStateProperties;
 import net.minecraft.tileentity.ITickableTileEntity;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Direction;
 import net.minecraft.util.NonNullList;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
-import net.minecraft.world.Explosion;
 import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
-import net.minecraftforge.fluids.capability.IFluidHandler;
-import net.minecraftforge.fluids.capability.IFluidHandler.FluidAction;
 import techeart.htu.MainClass;
 import techeart.htu.objects.HTUFluidTank;
 import techeart.htu.objects.TileEntityIgnitable;
 import techeart.htu.utils.FuelTemperatures;
-import techeart.htu.utils.HTUFluidHandler;
 import techeart.htu.utils.HTUHooks;
 import techeart.htu.utils.RegistryHandler;
 
@@ -43,7 +34,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Random;
 
-public class TileEntitySteamBoiler extends TileEntityIgnitable implements IInventory, INamedContainerProvider, ITickableTileEntity
+public class TileEntitySteamBoiler extends TileEntityIgnitable implements ISidedInventory, INamedContainerProvider, ITickableTileEntity
 {
     private Random random = new Random();
 
@@ -67,29 +58,11 @@ public class TileEntitySteamBoiler extends TileEntityIgnitable implements IInven
     //tracked fields
     private int burnTime;
     private int burnTimeTotal;
-    private int waterAmount;
-    private int steamAmount;
     private int temperature;
     private int pressure;
 
     private int fuelBurnTemperature;
     private int ambientTemperature = 16;
-
-    /**Chance in percents to extinct the burning fire*/
-    public static final int EXTINCTION_CHANCE = 5;
-
-    private boolean ignited = false;
-    @Override
-    protected boolean setIgnited(boolean value)
-    {
-        if(ignited != value)
-        {
-            ignited = value;
-            this.world.setBlockState(this.pos, this.world.getBlockState(this.pos).with(AbstractFurnaceBlock.LIT, this.isBurning()), 3);
-            markDirty();
-        }
-        return false;
-    }
 
     private ITextComponent customName;
 
@@ -97,7 +70,8 @@ public class TileEntitySteamBoiler extends TileEntityIgnitable implements IInven
     private static final Fluid WATER = Fluids.WATER;
     private static final Fluid STEAM = RegistryHandler.FLUID_STEAM.get();
 
-    private HTUFluidHandler fluidHandler;
+    private final HTUFluidTank tankWater;
+    private final HTUFluidTank tankSteam;
 
     private NonNullList<ItemStack> inventory = NonNullList.<ItemStack>withSize(1, ItemStack.EMPTY);
 
@@ -106,10 +80,9 @@ public class TileEntitySteamBoiler extends TileEntityIgnitable implements IInven
         super(RegistryHandler.STEAM_BOILER_TE.get());
 
         int steamVolume = internalVolumeSteam + (Math.floorDiv(internalVolumeSteam, ejectionPressure) * (maxPressure - ejectionPressure));
-        fluidHandler = new HTUFluidHandler(
-                new HTUFluidTank(internalVolumeWater, WATER),
-                new HTUFluidTank(steamVolume, STEAM)
-        );
+
+        tankWater = new HTUFluidTank(internalVolumeWater, WATER, HTUFluidTank.Type.INSERT_ONLY);
+        tankSteam = new HTUFluidTank(steamVolume, STEAM, HTUFluidTank.Type.EJECT_ONLY);
 
         if(world != null && pos != null)
             ambientTemperature = HTUHooks.getAmbientTemperature(world, pos);
@@ -120,162 +93,65 @@ public class TileEntitySteamBoiler extends TileEntityIgnitable implements IInven
     @Override
     public void tick()
     {
-        boolean flag = false;
-
-        if (this.isBurning()) { --this.burnTime; }
+        if (this.isBurning()) --this.burnTime;
 
         if (!this.world.isRemote)
         {
-            //TODO: optimization
-            if(pressure > initialPressure)
-            {
-                for (Direction face : Direction.values())
-                {
-                    if(face != Direction.UP && face != Direction.DOWN)
-                    {
-                        TileEntity tileEntity = world.getTileEntity(pos.offset(face));
-                        if(tileEntity != null)
-                        {
-                            LazyOptional<IFluidHandler> cap = tileEntity.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, face.getOpposite());
-                            if(cap.isPresent())
-                            {
-                                IFluidHandler fluidHandler = cap.orElse(null);
-                                if(fluidHandler != null)
-                                {
-                                    int toDrain = fluidHandler.fill(new FluidStack(STEAM, steamAmount), FluidAction.EXECUTE);
-                                    drain(toDrain, FluidAction.EXECUTE);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
 
-            if(ignited && !isBurning())
-            {
-                if(random.nextInt(100) < 99 - EXTINCTION_CHANCE) ignite();
-                else setIgnited(false);
-                flag = true;
-            }
-
-            if (this.isBurning())
-            {
-                if(temperature < maxTemperature && temperature < fuelBurnTemperature)
-                    this.temperature++;
-            }
-            else if(temperature > ambientTemperature) temperature--;
-            else if(temperature < ambientTemperature) temperature = ambientTemperature;
-
-            boolean canEjectSteam = !this.world.getBlockState(this.pos.up(2)).isSolid();
-            if(waterAmount > 0)
-            {
-                if (this.temperature >= conversionTemperature)
-                {
-                    int drained = this.drain(new FluidStack(WATER, waterConsumptionRate), FluidAction.EXECUTE).getAmount();
-                    int toFill = drained * conversionFactor;
-                    int filled = this.fill(new FluidStack(STEAM, toFill), FluidAction.EXECUTE);
-
-                    if(filled < toFill)
-                    {
-                        if(!canEjectSteam)
-                        {
-                            pressure++;
-                            if (pressure > maxPressure)
-                            {
-                                this.world.createExplosion(
-                                        (Entity) null,
-                                        this.pos.getX() + 0.5D, this.pos.getY() + 0.5D, this.pos.getZ() + 0.5D, 2.0F,
-                                        Explosion.Mode.DESTROY);
-                            }
-                        }
-                        else
-                        {
-                            this.world.addBlockEvent(this.pos, world.getBlockState(pos).getBlock(), 0, 0);
-                        }
-                    }
-                    else
-                    {
-                        int steamToPressureCoeff = internalVolumeSteam / ejectionPressure;
-                        pressure = MathHelper.clamp((this.steamAmount / steamToPressureCoeff), initialPressure, ejectionPressure);
-                    }
-                }
-            }
-            else
-            {
-                if(pressure > ejectionPressure && canEjectSteam)
-                {
-                    pressure--;
-                    this.world.addBlockEvent(this.pos, world.getBlockState(pos).getBlock(), 0, 0);
-                }
-                else
-                {
-                    int steamToPressureCoeff = internalVolumeSteam / ejectionPressure;
-                    pressure = MathHelper.clamp((this.steamAmount / steamToPressureCoeff), initialPressure, ejectionPressure);
-                }
-            }
         }
-
-        if (flag)
-        {
-            this.markDirty();
-        }
-
-//        System.out.println("======================================================");
-//        System.out.println("Water: " + this.getFluidAmount(0));
-//        System.out.println("Steam: " + this.getFluidAmount(1));
-//        System.out.println("Temp: " + this.temperature);
-//        System.out.println("Pressure: " + this.pressure);
-//        System.out.println("Burn time: " + this.burnTime);
-//        System.out.println("Can eject steam: " + canEjectSteam);
     }
 
     @Override
     public void ignite()
     {
-        if(!world.isRemote)
-        {
-            ItemStack fuel = this.inventory.get(0);
-            if (!fuel.isEmpty())
-            {
-                if (!isBurning())
-                {
-                    this.burnTimeTotal = getItemBurnTime(fuel);
-                    this.burnTime = this.burnTimeTotal;
-                    this.fuelBurnTemperature = FuelTemperatures.getBurnTemperature(fuel);
-                    if (this.isBurning())
-                    {
-                        setIgnited(true);
-                        if (fuel.hasContainerItem()) this.inventory.set(0, fuel.getContainerItem());
-                        else
-                        {
-                            fuel.shrink(1);
-                            if (fuel.isEmpty()) this.inventory.set(0, fuel.getContainerItem());
-                        }
+        if(world.isRemote) return;
 
-                        markDirty();
+        ItemStack fuel = this.inventory.get(0);
+        if (!fuel.isEmpty())
+        {
+            if (!isBurning())
+            {
+                this.burnTimeTotal = getItemBurnTime(fuel);
+                this.burnTime = this.burnTimeTotal;
+                this.fuelBurnTemperature = FuelTemperatures.getBurnTemperature(fuel);
+                if (this.isBurning())
+                {
+                    setIgnited(true);
+                    if (fuel.hasContainerItem()) this.inventory.set(0, fuel.getContainerItem());
+                    else
+                    {
+                        fuel.shrink(1);
+                        if (fuel.isEmpty()) this.inventory.set(0, fuel.getContainerItem());
                     }
+                    markDirty();
                 }
             }
-            else setIgnited(false);
         }
+        else setIgnited(false);
     }
 
     @Override
-    protected void onIgnited() { }
+    protected void onIgnited()
+    {
+        this.world.setBlockState(this.pos, this.world.getBlockState(this.pos).with(BlockStateProperties.LIT, true), 3);
+        markDirty();
+    }
+
+    @Override
+    protected void onExtinguished()
+    {
+        this.world.setBlockState(this.pos, this.world.getBlockState(this.pos).with(BlockStateProperties.LIT, false), 3);
+        markDirty();
+    }
 
     @Override
     protected void tickIgnition()
     {
-
-    }
-
-    @Override
-    protected void onExtinguished() { }
-
-    public int getFluidAmount(int index)
-    {
-        if(index == 0 || index == 1) return fluidHandler.getFluidInTank(index).getAmount();
-        else return -1;
+        if(isIgnited() && !isBurning())
+        {
+            if(random.nextInt(100) < 99 - EXTINCTION_CHANCE) ignite();
+            else setIgnited(false);
+        }
     }
 
     @Override
@@ -291,44 +167,44 @@ public class TileEntitySteamBoiler extends TileEntityIgnitable implements IInven
     }
 
     @Override
-    public void read(BlockState state, CompoundNBT compound)
+    public void read(BlockState state, CompoundNBT nbt)
     {
-        super.read(state, compound);
+        super.read(state, nbt);
 
-        this.burnTime = compound.getInt("BurnTime");
-        this.burnTimeTotal = compound.getInt("BurnTimeTotal");
-        this.temperature = compound.getInt("Temperature");
-        this.pressure = compound.getInt("Pressure");
+        this.burnTime = nbt.getInt("BurnTime");
+        this.burnTimeTotal = nbt.getInt("BurnTimeTotal");
+        this.temperature = nbt.getInt("Temperature");
+        this.pressure = nbt.getInt("Pressure");
 
-        this.ignited = compound.getBoolean("Ignited");
-        this.fuelBurnTemperature = compound.getInt("FuelTemperature");
+        this.setIgnited(nbt.getBoolean("Ignited"));
+        this.fuelBurnTemperature = nbt.getInt("FuelTemperature");
 
         this.inventory = NonNullList.<ItemStack>withSize(this.getSizeInventory(), ItemStack.EMPTY);
-        ItemStackHelper.loadAllItems(compound, this.inventory);
+        ItemStackHelper.loadAllItems(nbt, this.inventory);
 
-        this.fluidHandler.read(compound);
-        waterAmount = fluidHandler.getFluidInTank(0).getAmount();
-        steamAmount = fluidHandler.getFluidInTank(1).getAmount();
+        tankWater.readFromNBT(nbt);
+        tankSteam.readFromNBT(nbt);
     }
 
     @Override
-    public CompoundNBT write(CompoundNBT compound)
+    public CompoundNBT write(CompoundNBT nbt)
     {
-        super.write(compound);
+        super.write(nbt);
 
-        compound.putInt("BurnTime", (short)this.burnTime);
-        compound.putInt("BurnTimeTotal", (short)this.burnTimeTotal);
-        compound.putInt("Temperature", (short)this.temperature);
-        compound.putInt("Pressure", (short)this.pressure);
+        nbt.putInt("BurnTime", (short)this.burnTime);
+        nbt.putInt("BurnTimeTotal", (short)this.burnTimeTotal);
+        nbt.putInt("Temperature", (short)this.temperature);
+        nbt.putInt("Pressure", (short)this.pressure);
 
-        compound.putBoolean("Ignited", this.ignited);
-        compound.putInt("FuelTemperature", this.fuelBurnTemperature);
+        nbt.putBoolean("Ignited", this.isIgnited());
+        nbt.putInt("FuelTemperature", this.fuelBurnTemperature);
 
-        ItemStackHelper.saveAllItems(compound, this.inventory);
+        ItemStackHelper.saveAllItems(nbt, this.inventory);
 
-        this.fluidHandler.write(compound);
+        tankWater.writeToNBT(nbt);
+        tankSteam.writeToNBT(nbt);
 
-        return compound;
+        return nbt;
     }
 
     @Override
@@ -366,9 +242,9 @@ public class TileEntitySteamBoiler extends TileEntityIgnitable implements IInven
                 break;
             case 1: field = this.burnTimeTotal;
                 break;
-            case 2: field = this.waterAmount;
+            case 2: field = this.tankWater.getFluidAmount();
                 break;
-            case 3: field = this.steamAmount;
+            case 3: field = this.tankSteam.getFluidAmount();
                 break;
             case 4: field = this.temperature;
                 break;
@@ -386,9 +262,9 @@ public class TileEntitySteamBoiler extends TileEntityIgnitable implements IInven
                 break;
             case 1: this.burnTimeTotal = value;
                 break;
-            case 2: this.waterAmount = value;
+            case 2: //this.waterAmount = value;
                 break;
-            case 3: this.steamAmount = value;
+            case 3: //this.steamAmount = value;
                 break;
             case 4: this.temperature = value;
                 break;
@@ -459,65 +335,7 @@ public class TileEntitySteamBoiler extends TileEntityIgnitable implements IInven
     public void clear() { this.inventory.clear(); }
 
     @Override
-    public ITextComponent getDisplayName()
-    {
-        return this.customName != null ? this.customName : this.getDefaultName();
-    }
-
-    public int fill(FluidStack resource, FluidAction action)
-    {
-        //System.out.println("Filling");
-        int res = fluidHandler.fill(resource, action);
-        if(action == FluidAction.EXECUTE)
-        {
-            if(resource.getFluid() == WATER) waterAmount = fluidHandler.getFluidInTank(0).getAmount();
-            else if(resource.getFluid() == STEAM) steamAmount = fluidHandler.getFluidInTank(1).getAmount();
-            markDirty();
-        }
-        return res;
-    }
-
-    @Nullable
-    public FluidStack drain(FluidStack resource, FluidAction action)
-    {
-        FluidStack res = fluidHandler.drain(resource, action);
-        if(action == FluidAction.EXECUTE)
-        {
-            if(resource.getFluid() == WATER) waterAmount = fluidHandler.getFluidInTank(0).getAmount();
-            else if(resource.getFluid() == STEAM) steamAmount = fluidHandler.getFluidInTank(1).getAmount();
-            markDirty();
-        }
-        return res;
-    }
-
-    @Nullable
-    public FluidStack drain(int maxDrain, FluidAction action)
-    {
-        FluidStack res = fluidHandler.drain(STEAM, maxDrain, action);
-        if(action == FluidAction.EXECUTE)
-        {
-            steamAmount = fluidHandler.getFluidInTank(1).getAmount();
-            markDirty();
-        }
-        return res;
-    }
-
-    public int getTanks() {
-        return fluidHandler.getTanks();
-    }
-
-    @Nonnull
-    public FluidStack getFluidInTank(int tank) {
-        return fluidHandler.getFluidInTank(tank);
-    }
-
-    public int getTankCapacity(int tank) {
-        return fluidHandler.getTankCapacity(tank);
-    }
-
-    public boolean isFluidValid(int tank, @Nonnull FluidStack stack) {
-        return fluidHandler.isFluidValid(tank, stack);
-    }
+    public ITextComponent getDisplayName() { return this.customName != null ? this.customName : this.getDefaultName(); }
 
     public NonNullList<ItemStack> getInventory() { return inventory; }
 
@@ -529,10 +347,10 @@ public class TileEntitySteamBoiler extends TileEntityIgnitable implements IInven
     @Override
     public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> capability)
     {
-        if (capability == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY)
-        {
-            return CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY.orEmpty(capability, LazyOptional.of(() -> fluidHandler));
-        }
+//        if (capability == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY)
+//        {
+//            return CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY.orEmpty(capability, LazyOptional.of(() -> fluidHandler));
+//        }
         return super.getCapability(capability);
     }
 
@@ -540,10 +358,26 @@ public class TileEntitySteamBoiler extends TileEntityIgnitable implements IInven
     @Override
     public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> capability, @Nullable Direction facing)
     {
-        if (capability == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY && facing != Direction.DOWN)
-        {
-            return CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY.orEmpty(capability, LazyOptional.of(() -> fluidHandler));
-        }
+//        if (capability == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY && facing != Direction.DOWN)
+//        {
+//            return CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY.orEmpty(capability, LazyOptional.of(() -> fluidHandler));
+//        }
         return super.getCapability(capability, facing);
+    }
+
+    @Override
+    public int[] getSlotsForFace(Direction side)
+    {
+        return new int[0];
+    }
+
+    @Override
+    public boolean canInsertItem(int index, ItemStack itemStackIn, @Nullable Direction direction) {
+        return false;
+    }
+
+    @Override
+    public boolean canExtractItem(int index, ItemStack stack, Direction direction) {
+        return false;
     }
 }
