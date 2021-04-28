@@ -29,7 +29,7 @@ public class ContainerSteamBoiler extends Container
 
     public ContainerSteamBoiler(final int windowId, final PlayerInventory playerInvenoty, final TileEntitySteamBoiler tileEntity)
     {
-        super(RegistryHandler.STEAM_BOILER_CONTAINER.get(), windowId);
+        super(RegistryHandler.STEAM_BOILER.getContainer(), windowId);
 
         this.tileEntity = tileEntity;
 
@@ -96,7 +96,7 @@ public class ContainerSteamBoiler extends Container
     @Override
     public boolean canInteractWith(PlayerEntity playerIn)
     {
-        return isWithinUsableDistance(IWorldPosCallable.of(tileEntity.getWorld(), tileEntity.getPos()), playerIn, RegistryHandler.BLOCK_STEAM_BOILER.getPrimary());
+        return isWithinUsableDistance(IWorldPosCallable.of(tileEntity.getWorld(), tileEntity.getPos()), playerIn, RegistryHandler.STEAM_BOILER.getMainBlock().getBlock());
     }
 
     public ItemStack transferStackInSlot(PlayerEntity playerIn, int index)

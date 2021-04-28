@@ -19,10 +19,8 @@ import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.util.math.shapes.VoxelShapes;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.world.IWorld;
-import net.minecraft.world.IWorldReader;
 import net.minecraft.world.World;
 import net.minecraftforge.common.ToolType;
-import techeart.htu.objects.pipe.TileEntityPipeFluid;
 import techeart.htu.utils.ModUtils;
 import techeart.htu.utils.RegistryHandler;
 import techeart.htu.utils.registration.HTUBlock;
@@ -97,7 +95,7 @@ public class BlockWaterPump extends HTUBlock implements ITileEntityProvider
 
     @Nullable
     @Override
-    public TileEntity createNewTileEntity(IBlockReader worldIn) { return RegistryHandler.WATER_PUMP_TE.get().create(); }
+    public TileEntity createNewTileEntity(IBlockReader worldIn) { return RegistryHandler.WATER_PUMP.getMainBlock().getMachineTile().create(); }
 
     @Override
     public BlockState getStateForPlacement(BlockItemUseContext context)

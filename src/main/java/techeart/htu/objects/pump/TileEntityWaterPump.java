@@ -1,6 +1,5 @@
 package techeart.htu.objects.pump;
 
-import net.minecraft.block.AirBlock;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.fluid.Fluid;
@@ -18,15 +17,16 @@ import net.minecraftforge.fluids.FluidAttributes;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler;
-import net.minecraftforge.fluids.capability.IFluidHandler.*;
+import net.minecraftforge.fluids.capability.IFluidHandler.FluidAction;
 import techeart.htu.objects.HTUFluidTank;
 import techeart.htu.utils.CapabilityUtils;
-import techeart.htu.utils.HTUFluidHandler;
 import techeart.htu.utils.RegistryHandler;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.*;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 public class TileEntityWaterPump extends TileEntity implements ITickableTileEntity
 {
@@ -47,7 +47,7 @@ public class TileEntityWaterPump extends TileEntity implements ITickableTileEnti
 
     public TileEntityWaterPump()
     {
-        super(RegistryHandler.WATER_PUMP_TE.get());
+        super(RegistryHandler.WATER_PUMP.getMainBlock().getMachineTile());
         tankWater = new HTUFluidTank(internalVolumeWater, WATER, HTUFluidTank.Type.EJECT_ONLY);
         tankSteam = new HTUFluidTank(internalVolumeSteam, STEAM, HTUFluidTank.Type.INSERT_ONLY);
     }

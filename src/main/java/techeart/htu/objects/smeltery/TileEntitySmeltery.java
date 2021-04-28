@@ -46,7 +46,7 @@ public class TileEntitySmeltery extends TileEntityIgnitable implements ISidedInv
 
     public TileEntitySmeltery()
     {
-        super(RegistryHandler.SMELTERY_TE.get());
+        super(RegistryHandler.SMELTERY.getMainBlock().getMachineTile());
     }
 
     /*ISidedInventory*/

@@ -22,9 +22,7 @@ import net.minecraftforge.fml.event.server.FMLServerStoppingEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import techeart.htu.objects.boiler.GuiSteamBoiler;
 import techeart.htu.objects.pipe.IPipeGrid;
-import techeart.htu.objects.smeltery.GuiSmeltery;
 import techeart.htu.objects.tank.RendererFluidTank;
 import techeart.htu.recipes.alloying.AlloyRecipes;
 import techeart.htu.utils.FuelTemperatures;
@@ -79,8 +77,8 @@ public class MainClass
     private void setupClient(final FMLClientSetupEvent event)
     {
         //register gui containers
-        ScreenManager.registerFactory(RegistryHandler.SMELTERY_CONTAINER.get(), GuiSmeltery::new);
-        ScreenManager.registerFactory(RegistryHandler.STEAM_BOILER_CONTAINER.get(), GuiSteamBoiler::new);
+        ScreenManager.registerFactory(RegistryHandler.SMELTERY.getContainer(), RegistryHandler.SMELTERY.getGui());
+        ScreenManager.registerFactory(RegistryHandler.STEAM_BOILER.getContainer(), RegistryHandler.STEAM_BOILER.getGui());
 
         //register custom renderers
         RenderTypeLookup.setRenderLayer(RegistryHandler.BLOCK_FLUID_TANK.getPrimary(), RenderType.getCutout());
@@ -122,7 +120,7 @@ public class MainClass
         @Override
         public ItemStack createIcon()
         {
-            return new ItemStack(RegistryHandler.BLOCK_STEAM_BOILER.getSecondary());
+            return new ItemStack(RegistryHandler.STEAM_BOILER.getMainBlock().getItem());
         }
     };
 
@@ -131,7 +129,7 @@ public class MainClass
         @Override
         public ItemStack createIcon()
         {
-            return new ItemStack(RegistryHandler.BLOCK_PRIMITIVE_FURNACE.getSecondary());
+            return new ItemStack(RegistryHandler.PRIMITIVE_FURNACE.getMainBlock().getItem());
         }
     };
 

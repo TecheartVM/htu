@@ -31,7 +31,7 @@ public class HTUItem extends Item implements IHasModel
         //MainClass.proxy.registerItemModel(this, 0, "inventory");
     }
 
-    public static class Builder
+    public static class Builder //TODO: Make this thing more useful
     {
         @Nullable
         private ItemGroup itemGroup;

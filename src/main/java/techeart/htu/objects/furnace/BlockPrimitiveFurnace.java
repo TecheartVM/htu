@@ -88,7 +88,7 @@ public class BlockPrimitiveFurnace extends AbstractFurnaceBlock
     }
 
     @Override
-    public TileEntity createNewTileEntity(IBlockReader worldIn) { return RegistryHandler.FURNACE_TE.get().create(); }
+    public TileEntity createNewTileEntity(IBlockReader worldIn) { return RegistryHandler.PRIMITIVE_FURNACE.getMainBlock().getMachineTile().create(); }
 
     @OnlyIn(Dist.CLIENT)
     public void animateTick(BlockState stateIn, World worldIn, BlockPos pos, Random rand) {

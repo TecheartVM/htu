@@ -57,7 +57,7 @@ public class BlockSmeltery extends HTUBlock implements ITileEntityProvider
 
         if(!(tileEntity instanceof TileEntitySmeltery)) return;
 
-        world.setBlockState(pos, RegistryHandler.BLOCK_SMELTERY.getPrimary().getDefaultState().with(FACING, state.get(FACING)).with(LIT, active), 3);
+        world.setBlockState(pos, /*RegistryHandler.BLOCK_SMELTERY.getPrimary()*/ RegistryHandler.SMELTERY.getMainBlock().getBlock().getDefaultState().with(FACING, state.get(FACING)).with(LIT, active), 3);
 
         if(tileEntity != null)
         {
@@ -111,7 +111,7 @@ public class BlockSmeltery extends HTUBlock implements ITileEntityProvider
     @Override
     public TileEntity createNewTileEntity(IBlockReader worldIn)
     {
-        return RegistryHandler.SMELTERY_TE.get().create();
+        return RegistryHandler.SMELTERY.getMainBlock().getMachineTile().create();
     }
 
     @Override

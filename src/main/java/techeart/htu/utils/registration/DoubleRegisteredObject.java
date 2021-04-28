@@ -13,10 +13,14 @@ public class DoubleRegisteredObject<PRIMARY extends IForgeRegistryEntry<? super 
     }
 
     public PRIMARY getPrimary() {
+        if(primaryRO == null)
+            throw new NullPointerException("Primary variable is NULL!");
         return primaryRO.get();
     }
 
     public SECONDARY getSecondary() {
+        if(secondaryRO == null)
+            throw new NullPointerException("Secondary variable is NULL!");
         return secondaryRO.get();
     }
 }

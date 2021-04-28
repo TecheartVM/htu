@@ -29,7 +29,7 @@ public class ContainerSmeltery extends Container
 
     public ContainerSmeltery(final int windowId, final PlayerInventory playerInvenoty, final TileEntitySmeltery tileEntity)
     {
-        super(RegistryHandler.SMELTERY_CONTAINER.get(), windowId);
+        super(RegistryHandler.SMELTERY.getContainer(), windowId);
 
         this.tileEntity = tileEntity;
 
@@ -168,7 +168,7 @@ public class ContainerSmeltery extends Container
     @Override
     public boolean canInteractWith(PlayerEntity playerIn)
     {
-        return isWithinUsableDistance(IWorldPosCallable.of(tileEntity.getWorld(), tileEntity.getPos()), playerIn, RegistryHandler.BLOCK_SMELTERY.getPrimary());
+        return isWithinUsableDistance(IWorldPosCallable.of(tileEntity.getWorld(), tileEntity.getPos()), playerIn, RegistryHandler.SMELTERY.getMainBlock().getBlock());
     }
 
     public boolean isBurning() { return tileEntity.isBurning(); }

@@ -77,7 +77,7 @@ public class TileEntitySteamBoiler extends TileEntityIgnitable implements ISided
 
     public TileEntitySteamBoiler()
     {
-        super(RegistryHandler.STEAM_BOILER_TE.get());
+        super(RegistryHandler.STEAM_BOILER.getMainBlock().getMachineTile());
 
         int steamVolume = internalVolumeSteam + (Math.floorDiv(internalVolumeSteam, ejectionPressure) * (maxPressure - ejectionPressure));
 

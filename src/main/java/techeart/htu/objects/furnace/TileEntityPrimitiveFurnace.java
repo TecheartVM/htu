@@ -43,7 +43,7 @@ public class TileEntityPrimitiveFurnace extends AbstractFurnaceTileEntity
 
     public TileEntityPrimitiveFurnace()
     {
-        this(RegistryHandler.FURNACE_TE.get());
+        this(RegistryHandler.PRIMITIVE_FURNACE.getMainBlock().getMachineTile());
     }
 
     public TileEntityPrimitiveFurnace(TileEntityType<?> tileEntityTypeIn) { super(tileEntityTypeIn, IRecipeType.SMELTING); }
